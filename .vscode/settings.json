@@ -1,0 +1,77 @@
+{
+  "cSpell.words": ["tsbuildinfo", "tsdoc", "tsyringe", "Udacity", "uncolorize"],
+  "explorer.fileNesting.enabled": true,
+  "explorer.fileNesting.patterns": {
+    "*.js": "${capture}.js.map, ${capture}.min.js, ${capture}.d.ts",
+    "*.jsx": "${capture}.js",
+    "*.ts": "${capture}.js, ${capture}.type.ts",
+    "*.tsx": "${capture}.ts",
+    "package.json": "package-lock.json, yarn.lock, pnpm-lock.yaml, bun.lockb, .editorconfig, .gitignore, tsconfig.*, eslint.config.*, prettier.config.*, nodemon.*, jest.config.*",
+    "tsconfig.json": "tsconfig.*.json"
+  },
+  "exportall.config.folderListener": [
+    "/src/common/core/app",
+    "/src/common/core/constants",
+    "/src/common/core/decorators",
+    "/src/common/core/errors",
+    "/src/common/core/interfaces",
+    "/src/common/core/types"
+  ],
+  "material-icon-theme.activeIconPack": "none",
+  "material-icon-theme.files.associations": {
+    "router.ts": "typescript"
+  },
+  "material-icon-theme.folders.customClones": [
+    {
+      "name": "ts-declaration",
+      "base": "typescript",
+      "color": "#1976d2",
+      "folderNames": ["declarations", "types", "interfaces"]
+    }
+  ],
+  "material-icon-theme.files.customClones": [
+    {
+      "name": "ts-module",
+      "base": "typescript",
+      "color": "#776e91",
+      "fileExtensions": ["module.ts"]
+    },
+    {
+      "name": "ts-controller",
+      "base": "typescript",
+      "color": "#ffc107",
+      "fileExtensions": ["controller.ts"]
+    },
+    {
+      "name": "ts-constant",
+      "base": "typescript",
+      "color": "#607d8b",
+      "fileExtensions": ["constant.ts"]
+    },
+    {
+      "name": "ts-decorator",
+      "base": "typescript",
+      "color": "#ab47bc",
+      "fileExtensions": ["decorator.ts"]
+    },
+    {
+      "name": "ts-type",
+      "base": "typescript",
+      "color": "#90caf9",
+      "fileExtensions": ["type.ts", "interface.ts"]
+    },
+    {
+      "name": "ts-error",
+      "base": "typescript",
+      "color": "#ef5350",
+      "fileExtensions": ["error.ts"]
+    },
+    {
+      "name": "ts-entry",
+      "base": "typescript",
+      "color": "#daedfd",
+      "fileNames": ["main.ts", "index.ts"]
+    }
+  ],
+  "typescript.tsdk": "node_modules\\typescript\\lib"
+}
