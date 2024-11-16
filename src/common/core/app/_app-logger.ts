@@ -28,11 +28,18 @@ export class AppLogger implements IAppLogger {
       WinstonFormat.errors({
         stack: true,
       }),
-      WinstonFormat.printf(({ timestamp, level, message, ...data }) => {
+      WinstonFormat.printf(({ timestamp, level, message, stack, ...data }) => {
         const logLevelText = `${' '.repeat(7 - level.length)}${LogLevelColor[level] || level}`;
 
-        const log = `${timestamp}${logLevelText}:  ${message}`;
-        return Object.keys(data).length ? `${log}\n${JSON.stringify(data, null, 2)}` : log;
+        let log = `${timestamp}${logLevelText}:  ${message}`;
+        if (Object.keys(data).length) {
+          log = `${log}\n${JSON.stringify(data, null, 2)}`;
+        }
+        if (stack) {
+          log = `${log}\n${stack}`;
+        }
+
+        return log;
       }),
     );
     const formatWithUncolorize = WinstonFormat.combine(format, WinstonFormat.uncolorize());

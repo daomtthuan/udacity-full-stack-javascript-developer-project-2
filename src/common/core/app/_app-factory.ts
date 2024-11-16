@@ -13,7 +13,7 @@ import { MetadataFactory } from '~utils/reflect';
 
 import type { IApp, IAppConfig, IAppFactory, IAppLogger, IController, IModule } from '../interfaces';
 
-import { AppToken, Method } from '../constants';
+import { AppToken, Method, StatusCode } from '../constants';
 import { Inject, Injectable } from '../decorators';
 import { DefinitionError, ReflectionError, ServerError } from '../errors';
 import { ActionResult } from '../handler';
@@ -162,6 +162,8 @@ export class AppFactoryStatic implements IAppFactory {
     }
 
     router[actionMethod](actionPath, async (request, response, next) => {
+      this._logger.info(`Request ${cyan(request.method)} ${cyan(request.url)}.`);
+
       const params = [];
 
       const actionParams = actionMetadata.get('parameters') ?? {};
@@ -192,16 +194,33 @@ export class AppFactoryStatic implements IAppFactory {
         params[actionParams.response.index] = response;
       }
 
-      const result = await Promise.resolve(action.bind(controllerInstance)(...(params as Parameters<RequestHandler>)));
-      if (!result) {
-        return next();
-      }
+      try {
+        this._logger.debug(`Invoking action ${green(propName)} with parameters:`, params);
+        const result = await Promise.resolve(action.bind(controllerInstance)(...(params as Parameters<RequestHandler>)));
+        this._logger.debug(`Action ${green(propName)} success:`, result);
 
-      if (!(result instanceof ActionResult)) {
-        return next(new ServerError('Invalid action result.'));
-      }
+        if (!result) {
+          this._logger.info(`Request resolved with no result.`);
+          return next();
+        }
 
-      return result.resolve(request, response, next);
+        if (!(result instanceof ActionResult)) {
+          return next(new ServerError('Invalid action result.'));
+        }
+
+        return result.resolve(request, response, () => {
+          this._logger.info(`Request resolve with response status ${cyan(result.status.toString())}.`);
+          return next();
+        });
+      } catch (error) {
+        this._logger.error(`Action ${green(propName)} error:`, error);
+        if (this._config.isProduction) {
+          response.sendStatus(StatusCode.InternalServerError);
+          return;
+        } else {
+          return next(error);
+        }
+      }
     });
   }
 

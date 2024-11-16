@@ -23,6 +23,8 @@ export class UserController extends LogAble implements IController {
 
   @Post('/:id')
   editUser(@Param('id') id: string): IActionResult {
+    throw new Error('Not implemented');
+
     return new ActionResult(StatusCode.OK, {
       id,
     });
