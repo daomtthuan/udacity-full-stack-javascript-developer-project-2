@@ -3,23 +3,25 @@ import type { Class } from 'type-fest';
 
 import { cyan, gray, green } from 'ansis';
 import Compression from 'compression';
-import DotENV from 'dotenv';
 import Express, { type RequestHandler } from 'express';
 import Helmet from 'helmet';
 
-import { StringUtil } from '~utils/data-utility';
-import { type IMetadata, MetadataFactory } from '~utils/reflect';
+import type { IMetadata } from '~utils/reflect';
+
+import { StringUtil } from '~utils/data';
+import { MetadataFactory } from '~utils/reflect';
 
 import type { IApp, IAppConfig, IAppFactory, IAppLogger, IController, IModule } from '../interfaces';
-import type { ActionMetadata, ControllerMetadata, ModuleInstanceMetadata, ModuleMetadata } from '../types';
 
 import { AppToken, Method } from '../constants';
-import { Inject, Singleton } from '../decorators';
-import { ConfigurationError, DefinitionError, ReflectionError, ServerError } from '../errors';
+import { Inject, Injectable } from '../decorators';
+import { DefinitionError, ReflectionError, ServerError } from '../errors';
+import { ActionResult } from '../handler';
+import { ActionMetadata, ControllerMetadata, ModuleInstanceMetadata, ModuleMetadata } from '../types';
 import { AppContainer } from './_app-container';
 
 /** Application Factory Static. */
-@Singleton()
+@Injectable()
 export class AppFactoryStatic implements IAppFactory {
   private readonly _logger: IAppLogger;
   private _server?: Server;
@@ -33,15 +35,17 @@ export class AppFactoryStatic implements IAppFactory {
   ) {
     this._logger = logger.createLogger('App');
 
-    this._loadEnv();
+    this._logger.debug('Initialized.');
   }
 
   create<M extends Class<IModule>>(module: M): IApp {
+    this._logger.info(`Application with mode: ${cyan(this._config.mode ?? 'default')}, isProduction: ${cyan(this._config.isProduction ? 'true' : 'false')}.`);
+
     const app = Express();
     this._registerMiddlewares(app);
     this._registerModule(app, module);
 
-    this._logger.debug(`App created with module ${cyan(module.name)}.`);
+    this._logger.debug(`Application created.`);
 
     return {
       start: (onStart, onError) => {
@@ -67,21 +71,14 @@ export class AppFactoryStatic implements IAppFactory {
     };
   }
 
-  private _loadEnv(): void {
-    const env = DotENV.config();
-    if (env.error) {
-      throw new ConfigurationError('Failed to load environment variables.');
-    }
-  }
-
-  private _registerMiddlewares(app: Express.Express): void {
+  private _registerMiddlewares(app: Express.Express) {
     app.use(Helmet());
     app.use(Express.json());
     app.use(Express.urlencoded({ extended: true }));
     app.use(Compression());
   }
 
-  private _registerModule<M extends Class<IModule>>(app: Express.Express, module: M): void {
+  private _registerModule<M extends Class<IModule>>(app: Express.Express, module: M) {
     const moduleMetadata = MetadataFactory.create<ModuleMetadata>('module', module);
     if (!moduleMetadata) {
       throw new DefinitionError(`Class ${module.name} not decorated with @Module.`);
@@ -107,7 +104,7 @@ export class AppFactoryStatic implements IAppFactory {
     });
   }
 
-  private _registerController<M extends IModule, C extends Class<IController>>(app: Express.Express, moduleInstance: M, controller: C): void {
+  private _registerController<M extends IModule, C extends Class<IController>>(app: Express.Express, moduleInstance: M, controller: C) {
     const controllerMetadata = MetadataFactory.create<ControllerMetadata>('controller', controller);
     if (!controllerMetadata) {
       throw new DefinitionError(`Class ${controller.name} not decorated with @Controller.`);
@@ -159,8 +156,12 @@ export class AppFactoryStatic implements IAppFactory {
 
     this._logger.debug(`${' '.repeat(8 - actionMethod.length)}${actionMethod.toUpperCase()} ${cyan(url)} ${gray('->')} ${green(propName)}`);
 
-    const action = (controllerInstance[propName as keyof typeof controllerInstance] as RequestHandler).bind(controllerInstance);
-    router[actionMethod](actionPath, (request, response, next) => {
+    const action = controllerInstance[propName as keyof typeof controllerInstance];
+    if (typeof action !== 'function') {
+      throw new DefinitionError(`Method ${propName} not a function.`);
+    }
+
+    router[actionMethod](actionPath, async (request, response, next) => {
       const params = [];
 
       const actionParams = actionMetadata.get('parameters') ?? {};
@@ -169,19 +170,42 @@ export class AppFactoryStatic implements IAppFactory {
         params[actionParams.request.index] = request;
       }
 
-      if (actionParams.response) {
-        params[actionParams.response.index] = response;
-      }
-
       if (actionParams.next) {
         params[actionParams.next.index] = next;
       }
 
-      action(...(params as Parameters<RequestHandler>));
+      if (actionParams.body) {
+        params[actionParams.body.index] = request.body;
+      }
+
+      if (actionParams.params) {
+        Object.entries(actionParams.params).forEach(([name, param]) => {
+          if (!param) {
+            return;
+          }
+
+          params[param.index] = request.params[name];
+        });
+      }
+
+      if (actionParams.response) {
+        params[actionParams.response.index] = response;
+      }
+
+      const result = await Promise.resolve(action.bind(controllerInstance)(...(params as Parameters<RequestHandler>)));
+      if (!result) {
+        return next();
+      }
+
+      if (!(result instanceof ActionResult)) {
+        return next(new ServerError('Invalid action result.'));
+      }
+
+      return result.resolve(request, response, next);
     });
   }
 
-  private _defineModuleInstanceMetadata<M extends IModule>(moduleInstance: M): void {
+  private _defineModuleInstanceMetadata<M extends IModule>(moduleInstance: M) {
     const moduleInstanceMetadata = MetadataFactory.create<ModuleInstanceMetadata>(moduleInstance);
 
     moduleInstanceMetadata.define({

@@ -1,6 +1,7 @@
+import type { InjectionToken } from 'tsyringe';
 import type { Class } from 'type-fest';
 
-import { container, type InjectionToken } from 'tsyringe';
+import { container } from 'tsyringe';
 
 import type { IAppContainer, IModule } from '../interfaces';
 

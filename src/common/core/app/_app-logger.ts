@@ -5,7 +5,7 @@ import WinstonDailyRotateFile from 'winston-daily-rotate-file';
 import type { IAppConfig, IAppLogger } from '../interfaces';
 
 import { AppToken, LogLevelColor } from '../constants';
-import { Inject, Singleton } from '../decorators';
+import { Inject, Injectable } from '../decorators';
 
 const {
   format: WinstonFormat,
@@ -13,7 +13,7 @@ const {
 } = Winston;
 
 /** Application Logger. */
-@Singleton()
+@Injectable()
 export class AppLogger implements IAppLogger {
   private readonly _logger: Winston.Logger;
 
@@ -65,22 +65,22 @@ export class AppLogger implements IAppLogger {
       exitOnError: false,
     });
 
-    this.debug(`${magenta('[Logger]')} initialized`);
+    this.debug(`${magenta('[Logger]')} Initialized.`);
   }
 
-  public error(message: string, ...meta: unknown[]): void {
+  public error(message: string, ...meta: unknown[]) {
     this._logger.error(message, ...meta);
   }
 
-  public warn(message: string, ...meta: unknown[]): void {
+  public warn(message: string, ...meta: unknown[]) {
     this._logger.warn(message, ...meta);
   }
 
-  public info(message: string, ...meta: unknown[]): void {
+  public info(message: string, ...meta: unknown[]) {
     this._logger.info(message, ...meta);
   }
 
-  public debug(message: string, ...meta: unknown[]): void {
+  public debug(message: string, ...meta: unknown[]) {
     this._logger.debug(message, ...meta);
   }
 

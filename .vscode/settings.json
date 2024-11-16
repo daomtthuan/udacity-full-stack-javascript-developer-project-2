@@ -15,11 +15,15 @@
     "/src/common/core/decorators",
     "/src/common/core/errors",
     "/src/common/core/interfaces",
-    "/src/common/core/types"
+    "/src/common/core/types",
+    "/src/common/core/handlers"
   ],
   "material-icon-theme.activeIconPack": "none",
   "material-icon-theme.files.associations": {
     "router.ts": "typescript"
+  },
+  "material-icon-theme.folders.associations": {
+    "utils/data": ""
   },
   "material-icon-theme.folders.customClones": [
     {

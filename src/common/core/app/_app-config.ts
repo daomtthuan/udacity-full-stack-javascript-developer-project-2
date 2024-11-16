@@ -1,23 +1,44 @@
+import DotENV from 'dotenv';
 import Path from 'path';
 
 import type { IAppConfig } from '../interfaces';
 import type { DirectoryConfig, ServerConfig } from '../types';
 
 import { DefaultAppConfig } from '../constants';
-import { Singleton } from '../decorators';
+import { Injectable } from '../decorators';
 import { ConfigurationError } from '../errors';
 
 /** Application Configuration. */
-@Singleton()
+@Injectable()
 export class AppConfig implements IAppConfig {
+  readonly mode: string | undefined;
   readonly isProduction: boolean;
   readonly server: ServerConfig;
   readonly directory: DirectoryConfig;
 
   constructor() {
+    const modeParamIndex = process.argv.findIndex((arg) => arg === '--mode');
+    this.mode = modeParamIndex >= 0 ? process.argv[modeParamIndex + 1] : undefined;
+
+    this._loadEnv();
+
     this.isProduction = this._isProduction;
     this.server = this._serverConfig;
     this.directory = this._directoryConfig;
+  }
+
+  private _loadEnv() {
+    if (this.mode) {
+      const env = DotENV.config({ path: Path.resolve(process.cwd(), `.env.${this.mode}`) });
+      if (env.error) {
+        throw new ConfigurationError(`Failed to load environment variables for mode: ${this.mode}.`);
+      }
+    }
+
+    const env = DotENV.config();
+    if (env.error) {
+      throw new ConfigurationError('Failed to load environment variables.');
+    }
   }
 
   private get _isProduction(): boolean {

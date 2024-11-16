@@ -1,6 +1,6 @@
 import type { Class } from 'type-fest';
 
-import { StringUtil } from '~utils/data-utility';
+import { StringUtil } from '~utils/data';
 import { MetadataFactory } from '~utils/reflect';
 
 import type { ClassDecorator, ControllerDecoratorOptions, ControllerMetadata } from '../types';
@@ -35,7 +35,7 @@ export function Controller(options: ControllerDecoratorOptions | string = {}): C
  * @param constructor Controller class.
  * @param options Controller options.
  */
-function defineMetadata<C>(constructor: Class<C>, { path }: ControllerDecoratorOptions): void {
+function defineMetadata<C>(constructor: Class<C>, { path }: ControllerDecoratorOptions) {
   const controllerMetadata = MetadataFactory.create<ControllerMetadata>(constructor);
 
   const basePath = controllerMetadata.get('path');

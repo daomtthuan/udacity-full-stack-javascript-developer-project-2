@@ -88,7 +88,7 @@ export function Delete(options: ActionDecoratorOptions | string = {}): MethodDec
  * @param method Action method.
  * @param options Action options.
  */
-function defineMetadata<A extends object>(target: A, propertyKey: string | symbol, method: Method, { path = '' }: ActionDecoratorOptions): void {
+function defineMetadata<A extends object>(target: A, propertyKey: string | symbol, method: Method, { path = '' }: ActionDecoratorOptions) {
   const actionMetadata = MetadataFactory.create<ActionMetadata>(target, propertyKey);
 
   const baseParameters = actionMetadata.get('parameters') ?? {};

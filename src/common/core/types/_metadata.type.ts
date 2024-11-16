@@ -56,31 +56,24 @@ export type ActionMetadata = MetadataSchema<
 
     /** Parameters of the action. */
     readonly parameters: {
-      /** Request parameter. */
-      readonly request?: {
+      readonly [key in 'request' | 'response' | 'next' | 'body']?: {
         /** Request parameter name. */
         readonly name: string | symbol;
 
         /** Request parameter index. */
         readonly index: number;
       };
+    } & {
+      /** Request parameter params. */
+      params?: {
+        /** Request parameter param name. */
+        readonly [key in string]?: {
+          /** Request parameter param name. */
+          readonly name: string | symbol;
 
-      /** Response parameter. */
-      readonly response?: {
-        /** Response parameter name. */
-        readonly name: string | symbol;
-
-        /** Response parameter index. */
-        readonly index: number;
-      };
-
-      /** Next parameter. */
-      readonly next?: {
-        /** Next parameter name. */
-        readonly name: string | symbol;
-
-        /** Next parameter index. */
-        readonly index: number;
+          /** Request parameter param index. */
+          readonly index: number;
+        };
       };
     };
   }

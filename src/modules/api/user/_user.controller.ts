@@ -1,14 +1,14 @@
-import type { IController, Response } from '~core';
+import type { ActionResponse, IActionResult, IController } from '~core';
 
-import { Controller, Get, Res, StatusCode } from '~core';
+import { ActionResult, Controller, Get, Param, Post, Res, StatusCode } from '~core';
 import { LogAble } from '~utils/logger';
 
 @Controller({
-  path: '/user',
+  path: '/users',
 })
 export class UserController extends LogAble implements IController {
   @Get()
-  getUsers(@Res() res: Response) {
+  getUsers(@Res() res: ActionResponse) {
     res.status(StatusCode.OK).json([
       {
         id: 1,
@@ -19,5 +19,12 @@ export class UserController extends LogAble implements IController {
         name: 'Alice Quinn',
       },
     ]);
+  }
+
+  @Post('/:id')
+  editUser(@Param('id') id: string): IActionResult {
+    return new ActionResult(StatusCode.OK, {
+      id,
+    });
   }
 }

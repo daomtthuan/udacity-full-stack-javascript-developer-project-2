@@ -6,6 +6,7 @@ import type { IAppConfig } from '../interfaces';
 
 /** Default Application Configuration. */
 export const DefaultAppConfig: IAppConfig = {
+  mode: undefined,
   isProduction: false,
 
   server: {

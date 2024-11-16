@@ -45,6 +45,9 @@ export interface IAppContainer {
 
 /** Application Configuration interface. */
 export interface IAppConfig {
+  /** Application mode. */
+  readonly mode: string | undefined;
+
   /** Indicates whether the application is running in production mode. */
   readonly isProduction: boolean;
 

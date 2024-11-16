@@ -4,5 +4,6 @@ export * from './app';
 export * from './constants';
 export * from './decorators';
 export * from './errors';
+export * from './handler';
 export * from './interfaces';
 export * from './types';
