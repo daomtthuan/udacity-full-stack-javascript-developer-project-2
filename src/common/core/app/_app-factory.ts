@@ -16,7 +16,7 @@ import type { IApp, IAppConfig, IAppFactory, IAppLogger, IController, IModule } 
 import { AppToken, Method, StatusCode } from '../constants';
 import { Inject, Injectable } from '../decorators';
 import { DefinitionError, ReflectionError, ServerError } from '../errors';
-import { ActionResult } from '../handler';
+import { ActionResult } from '../http';
 import { ActionMetadata, ControllerMetadata, ModuleInstanceMetadata, ModuleMetadata } from '../types';
 import { AppContainer } from './_app-container';
 

@@ -23,7 +23,8 @@
     "router.ts": "typescript"
   },
   "material-icon-theme.folders.associations": {
-    "utils/data": ""
+    "utils/data": "",
+    "http": "api"
   },
   "material-icon-theme.folders.customClones": [
     {
