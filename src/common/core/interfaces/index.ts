@@ -1,2 +1,2 @@
 export * from './_app.interface';
-export * from './_handler.interface';
+export * from './_http.interface';

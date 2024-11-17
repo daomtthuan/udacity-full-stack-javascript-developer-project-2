@@ -71,8 +71,6 @@ export class AppLogger implements IAppLogger {
 
       exitOnError: false,
     });
-
-    this.debug(`${magenta('[Logger]')} Initialized.`);
   }
 
   public error(message: string, ...meta: unknown[]) {

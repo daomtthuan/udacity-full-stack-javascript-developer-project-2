@@ -165,19 +165,28 @@ export class AppFactoryStatic implements IAppFactory {
       this._logger.info(`Request ${cyan(request.method)} ${cyan(request.url)}.`);
 
       const params = [];
+      const logParams = [];
 
       const actionParams = actionMetadata.get('parameters') ?? {};
 
       if (actionParams.request) {
         params[actionParams.request.index] = request;
+        logParams[actionParams.request.index] = '[object ActionRequest]';
+      }
+
+      if (actionParams.response) {
+        params[actionParams.response.index] = response;
+        logParams[actionParams.response.index] = '[object ActionResponse]';
       }
 
       if (actionParams.next) {
         params[actionParams.next.index] = next;
+        logParams[actionParams.next.index] = '[function NextFunction]';
       }
 
       if (actionParams.body) {
         params[actionParams.body.index] = request.body;
+        logParams[actionParams.body.index] = request.body;
       }
 
       if (actionParams.params) {
@@ -187,20 +196,16 @@ export class AppFactoryStatic implements IAppFactory {
           }
 
           params[param.index] = request.params[name];
+          logParams[param.index] = request.params[name];
         });
       }
 
-      if (actionParams.response) {
-        params[actionParams.response.index] = response;
-      }
-
       try {
-        this._logger.debug(`Invoking action ${green(propName)} with parameters:`, params);
+        this._logger.debug(`Invoking action ${green(propName)} with parameters:`, logParams);
         const result = await Promise.resolve(action.bind(controllerInstance)(...(params as Parameters<RequestHandler>)));
-        this._logger.debug(`Action ${green(propName)} success:`, result);
 
         if (!result) {
-          this._logger.info(`Request resolved with no result.`);
+          this._logger.info(`Action ${green(propName)} resolved with no result.`);
           return next();
         }
 
@@ -208,8 +213,9 @@ export class AppFactoryStatic implements IAppFactory {
           return next(new ServerError('Invalid action result.'));
         }
 
+        this._logger.debug(`Action ${green(propName)} result:`, result);
         return result.resolve(request, response, () => {
-          this._logger.info(`Request resolve with response status ${cyan(result.status.toString())}.`);
+          this._logger.info(`Action ${green(propName)} resolved with response status ${cyan(result.status.toString())}.`);
           return next();
         });
       } catch (error) {

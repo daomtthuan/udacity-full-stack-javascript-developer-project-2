@@ -15,9 +15,11 @@ export class AppContainerStatic implements IAppContainer {
   private readonly _resolvedModules = new Map<InjectionToken<IModule>, IModule>();
 
   constructor(isRoot: boolean = false) {
-    if (isRoot) {
-      this._registerDependency();
+    if (!isRoot) {
+      return;
     }
+
+    this._registerDependency();
   }
 
   resolve<T>(token: InjectionToken<T>): T {
@@ -40,8 +42,8 @@ export class AppContainerStatic implements IAppContainer {
   }
 
   private _registerDependency() {
-    this._container.registerSingleton(AppToken.IAppConfig, AppConfig);
-    this._container.registerSingleton(AppToken.IAppLogger, AppLogger);
+    container.registerSingleton(AppToken.IAppConfig, AppConfig);
+    container.registerSingleton(AppToken.IAppLogger, AppLogger);
   }
 }
 

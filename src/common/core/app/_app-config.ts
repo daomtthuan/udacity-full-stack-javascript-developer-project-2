@@ -20,14 +20,14 @@ export class AppConfig implements IAppConfig {
     const modeParamIndex = process.argv.findIndex((arg) => arg === '--mode');
     this.mode = modeParamIndex >= 0 ? process.argv[modeParamIndex + 1] : undefined;
 
-    this._loadEnv();
+    this._loadEnvironment();
 
     this.isProduction = this._isProduction;
     this.server = this._serverConfig;
     this.directory = this._directoryConfig;
   }
 
-  private _loadEnv() {
+  private _loadEnvironment() {
     if (this.mode) {
       const env = DotENV.config({ path: Path.resolve(process.cwd(), `.env.${this.mode}`) });
       if (env.error) {
