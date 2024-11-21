@@ -11,45 +11,41 @@ import type { IMetadata } from '~utils/reflect';
 import { StringUtil } from '~utils/data';
 import { MetadataFactory } from '~utils/reflect';
 
-import type { IApp, IAppConfig, IAppFactory, IAppLogger, IController, IModule } from '../interfaces';
+import type { IApp, IAppConfig, IAppFactory, IAppLogger } from '../interfaces';
+import type { AppModule } from '../types';
 
-import { AppToken, Method, StatusCode } from '../constants';
-import { Inject, Injectable } from '../decorators';
+import { HTTPMethod, HTTPStatusCode, InterfaceToken } from '../constants';
 import { DefinitionError, ReflectionError, ServerError } from '../errors';
 import { ActionResult } from '../http';
 import { ActionMetadata, ControllerMetadata, ModuleInstanceMetadata, ModuleMetadata } from '../types';
 import { AppContainer } from './_app-container';
 
 /** Application Factory Static. */
-@Injectable()
-export class AppFactoryStatic implements IAppFactory {
+class AppFactoryStatic implements IAppFactory {
+  private readonly _mode: string | undefined;
+  private readonly _config: IAppConfig;
   private readonly _logger: IAppLogger;
-  private _server?: Server;
 
-  constructor(
-    @Inject(AppToken.IAppConfig)
-    private readonly _config: IAppConfig,
-
-    @Inject(AppToken.IAppLogger)
-    logger: IAppLogger,
-  ) {
-    this._logger = logger.createLogger('App');
+  constructor() {
+    this._config = AppContainer.resolve<IAppConfig>(InterfaceToken.IAppConfig);
+    this._logger = AppContainer.resolve<IAppLogger>(InterfaceToken.IAppLogger).createLogger('App');
 
     this._logger.debug('Initialized.');
   }
 
-  create<M extends Class<IModule>>(module: M): IApp {
-    this._logger.info(`Application with mode: ${cyan(this._config.mode ?? 'default')}, isProduction: ${cyan(this._config.isProduction ? 'true' : 'false')}.`);
+  async create<M extends Class<object>>(module: M): Promise<IApp> {
+    this._logger.info(`Application with mode: ${cyan(this._mode ?? 'default')}, isProduction: ${cyan(this._config.isProduction ? 'true' : 'false')}.`);
 
     const app = Express();
     this._registerMiddlewares(app);
-    this._registerModule(app, module);
+    await this._registerModule(app, module);
 
     this._logger.debug(`Application created.`);
 
+    let server: Server | undefined;
     return {
       start: (onStart, onError) => {
-        this._server = app
+        server = app
           .listen(this._config.server.port, this._config.server.host, () => {
             this._logger.info(`Server running on ${cyan(this._baseUrl)}.`);
             onStart?.();
@@ -61,11 +57,11 @@ export class AppFactoryStatic implements IAppFactory {
       },
 
       stop: () => {
-        if (!this._server) {
+        if (!server) {
           throw new ServerError('Server not initialized.');
         }
 
-        this._server.close();
+        server.close();
         this._logger.info('Server stopped.');
       },
     };
@@ -78,25 +74,27 @@ export class AppFactoryStatic implements IAppFactory {
     app.use(Compression());
   }
 
-  private _registerModule<M extends Class<IModule>>(app: Express.Express, module: M) {
-    const moduleMetadata = MetadataFactory.create<ModuleMetadata>('module', module);
+  private async _registerModule<M extends object>(app: Express.Express, module: AppModule<M>) {
+    const moduleName = (typeof module === 'function' ? module.name : module.token).toString();
+
+    const moduleMetadata = MetadataFactory.create<ModuleMetadata>('module', typeof module === 'function' ? module : module.module);
     if (!moduleMetadata) {
-      throw new DefinitionError(`Class ${module.name} not decorated with @Module.`);
+      throw new DefinitionError(`Class ${moduleName} not decorated with @Module.`);
     }
 
     if (AppContainer.isModuleResolved(module)) {
       return;
     }
 
-    this._logger.debug(`Registering module ${cyan(module.name)}.`);
+    this._logger.debug(`Registering module ${cyan(moduleName)}.`);
 
-    const moduleInstance = AppContainer.resolveModule(module);
+    const moduleInstance = await AppContainer.resolveModule(module);
     this._defineModuleInstanceMetadata(moduleInstance);
 
     const modules = moduleMetadata.get('modules') ?? [];
-    modules.forEach((module) => {
-      this._registerModule(app, module);
-    });
+    for (const module of modules) {
+      await this._registerModule(app, module);
+    }
 
     const controllers = moduleMetadata.get('controllers') ?? [];
     controllers.forEach((controller) => {
@@ -104,7 +102,7 @@ export class AppFactoryStatic implements IAppFactory {
     });
   }
 
-  private _registerController<M extends IModule, C extends Class<IController>>(app: Express.Express, moduleInstance: M, controller: C) {
+  private _registerController<M extends object, C extends Class<object>>(app: Express.Express, moduleInstance: M, controller: C) {
     const controllerMetadata = MetadataFactory.create<ControllerMetadata>('controller', controller);
     if (!controllerMetadata) {
       throw new DefinitionError(`Class ${controller.name} not decorated with @Controller.`);
@@ -125,40 +123,39 @@ export class AppFactoryStatic implements IAppFactory {
     const controllerInstance = moduleContainer.resolve(controller);
 
     const controllerPath = controllerMetadata.get('path') || '/';
+    const controllerActions = controllerMetadata.get('actions') ?? [];
 
     const router = Express.Router();
-    Object.getOwnPropertyNames(controller.prototype).forEach((propName) => {
-      if (typeof controller.prototype[propName as keyof typeof controller.prototype] !== 'function' && propName === 'constructor') {
+    controllerActions.forEach((propName) => {
+      const propertyKey = propName as keyof typeof controllerInstance;
+
+      const actionMetadata = MetadataFactory.create<ActionMetadata>('action', controllerInstance, propertyKey);
+      if (typeof controllerInstance[propertyKey] !== 'function' || !actionMetadata) {
         return;
       }
 
-      const actionMetadata = MetadataFactory.create<ActionMetadata>('action', controller.prototype, propName);
-      if (!actionMetadata) {
-        return;
-      }
-
-      this._registerControllerAction(router, controllerInstance, controllerPath, actionMetadata, propName);
+      this._registerControllerAction(router, controllerInstance, controllerPath, actionMetadata, propertyKey);
     });
 
     app.use(controllerPath, router);
   }
 
-  private _registerControllerAction<C extends IController>(
+  private _registerControllerAction<C extends object>(
     router: Express.Router,
     controllerInstance: C,
     controllerPath: string,
     actionMetadata: IMetadata<ActionMetadata>,
-    propName: string,
+    propertyKey: string | symbol,
   ) {
-    const actionMethod = actionMetadata.get('method') ?? Method.Get;
+    const actionMethod = actionMetadata.get('method') ?? HTTPMethod.Get;
     const actionPath = actionMetadata.get('path') || '/';
     const url = `${this._baseUrl}${StringUtil.resolvePath(controllerPath, actionPath)}`;
 
-    this._logger.debug(`${' '.repeat(8 - actionMethod.length)}${actionMethod.toUpperCase()} ${cyan(url)} ${gray('->')} ${green(propName)}`);
+    this._logger.debug(`${' '.repeat(8 - actionMethod.length)}${actionMethod.toUpperCase()} ${cyan(url)} ${gray('->')} ${green(propertyKey.toString())}`);
 
-    const action = controllerInstance[propName as keyof typeof controllerInstance];
+    const action = controllerInstance[propertyKey as keyof typeof controllerInstance];
     if (typeof action !== 'function') {
-      throw new DefinitionError(`Method ${propName} not a function.`);
+      throw new DefinitionError(`Method ${propertyKey.toString()} not a function.`);
     }
 
     router[actionMethod](actionPath, async (request, response, next) => {
@@ -201,11 +198,11 @@ export class AppFactoryStatic implements IAppFactory {
       }
 
       try {
-        this._logger.debug(`Invoking action ${green(propName)} with parameters:`, logParams);
+        this._logger.debug(`Invoking action ${green(propertyKey.toString())} with parameters:`, logParams);
         const result = await Promise.resolve(action.bind(controllerInstance)(...(params as Parameters<RequestHandler>)));
 
         if (!result) {
-          this._logger.info(`Action ${green(propName)} resolved with no result.`);
+          this._logger.info(`Action ${green(propertyKey.toString())} resolved with no result.`);
           return next();
         }
 
@@ -213,15 +210,15 @@ export class AppFactoryStatic implements IAppFactory {
           return next(new ServerError('Invalid action result.'));
         }
 
-        this._logger.debug(`Action ${green(propName)} result:`, result);
+        this._logger.debug(`Action ${green(propertyKey.toString())} result:`, result);
         return result.resolve(request, response, () => {
-          this._logger.info(`Action ${green(propName)} resolved with response status ${cyan(result.status.toString())}.`);
+          this._logger.info(`Action ${green(propertyKey.toString())} resolved with response status ${cyan(result.status.toString())}.`);
           return next();
         });
       } catch (error) {
-        this._logger.error(`Action ${green(propName)} error:`, error);
+        this._logger.error(`Action ${green(propertyKey.toString())} error:`, error);
         if (this._config.isProduction) {
-          response.sendStatus(StatusCode.InternalServerError);
+          response.sendStatus(HTTPStatusCode.InternalServerError);
           return;
         } else {
           return next(error);
@@ -230,7 +227,7 @@ export class AppFactoryStatic implements IAppFactory {
     });
   }
 
-  private _defineModuleInstanceMetadata<M extends IModule>(moduleInstance: M) {
+  private _defineModuleInstanceMetadata<M extends object>(moduleInstance: M) {
     const moduleInstanceMetadata = MetadataFactory.create<ModuleInstanceMetadata>(moduleInstance);
 
     moduleInstanceMetadata.define({
@@ -245,4 +242,4 @@ export class AppFactoryStatic implements IAppFactory {
 }
 
 /** Application Factory. */
-export const AppFactory: IAppFactory = AppContainer.resolve(AppFactoryStatic);
+export const AppFactory: IAppFactory = new AppFactoryStatic();

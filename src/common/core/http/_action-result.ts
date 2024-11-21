@@ -1,6 +1,6 @@
 import type { RequestHandler } from 'express';
-import type { StatusCode } from 'src/common/core/constants';
 
+import type { HTTPStatusCode } from '../constants';
 import type { IActionResult } from '../interfaces';
 import type { ActionResultBody } from '../types';
 
@@ -11,7 +11,7 @@ import type { ActionResultBody } from '../types';
  */
 export class ActionResult<T extends ActionResultBody> implements IActionResult<T> {
   constructor(
-    readonly status: StatusCode,
+    readonly status: HTTPStatusCode,
     readonly body: T,
   ) {}
 

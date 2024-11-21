@@ -19,8 +19,11 @@
     "baseUrl": ".",
     "paths": {
       "~core": ["src/common/core"],
-      "~modules/*": ["src/modules/*"],
-      "~utils/*": ["src/common/utils/*"]
+      "~utils/*": ["src/common/utils/*"],
+      "~constants/*": ["src/constants/*"],
+      "~database/*": ["src/database/*"],
+      "~models/*": ["src/models/*"],
+      "~modules/*": ["src/modules/*"]
     },
 
     // # JavaScript Support
@@ -50,8 +53,8 @@
     "noImplicitThis": true,
     "useUnknownInCatchVariables": true,
     "alwaysStrict": true,
-    // "noUnusedLocals": true,
-    // "noUnusedParameters": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
     "exactOptionalPropertyTypes": true,
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true,
@@ -62,5 +65,5 @@
     // # Completeness
     "skipLibCheck": true
   },
-  "include": ["src", "types", "test"]
+  "include": ["src", "types", "test", "src/**/*.json"]
 }

@@ -1,12 +1,7 @@
+import type { IStringUtil } from './interfaces';
+
 /** String Utility Static. */
-export class StringUtilStatic {
-  /**
-   * Resolve path.
-   *
-   * @param paths Paths to resolve.
-   *
-   * @returns Resolved path.
-   */
+class StringUtilStatic implements IStringUtil {
   resolvePath(...paths: (string | undefined)[]): string {
     let resolvedPath = paths
       .filter((path): path is string => !!path)
@@ -22,4 +17,4 @@ export class StringUtilStatic {
 }
 
 /** String Utility. */
-export const StringUtil = new StringUtilStatic();
+export const StringUtil: IStringUtil = new StringUtilStatic();

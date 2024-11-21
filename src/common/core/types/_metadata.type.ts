@@ -2,21 +2,22 @@ import type { Class } from 'type-fest';
 
 import type { MetadataSchema } from '~utils/reflect';
 
-import type { Method } from '../constants';
-import type { IAppContainer, IController, IModule, IProvider } from '../interfaces';
+import type { HTTPMethod } from '../constants';
+import type { IAppContainer } from '../interfaces';
+import type { AppModule } from './_app.type';
 
 /** Module metadata. */
 export type ModuleMetadata = MetadataSchema<
   'module',
   {
     /** Modules. */
-    readonly modules: Class<IModule>[];
+    readonly modules: AppModule<object>[];
 
     /** Controllers. */
-    readonly controllers: Class<IController>[];
+    readonly controllers: Class<object>[];
 
     /** Providers. */
-    readonly providers: Class<IProvider>[];
+    readonly providers: Class<object>[];
   }
 >;
 
@@ -38,6 +39,9 @@ export type ControllerMetadata = MetadataSchema<
 
     /** Path of the controller. */
     readonly path: string;
+
+    /** Actions of the controller. */
+    readonly actions: (string | symbol)[];
   }
 >;
 
@@ -52,7 +56,7 @@ export type ActionMetadata = MetadataSchema<
     readonly path: string;
 
     /** Method of the action. */
-    readonly method: Method;
+    readonly method: HTTPMethod;
 
     /** Parameters of the action. */
     readonly parameters: {
@@ -76,5 +80,26 @@ export type ActionMetadata = MetadataSchema<
         };
       };
     };
+  }
+>;
+
+/** Entity metadata. */
+export type EntityMetadata = MetadataSchema<
+  'entity',
+  {
+    /** Table name. */
+    readonly table: string;
+
+    /** Properties of the entity. */
+    readonly properties: (string | symbol)[];
+  }
+>;
+
+/** Property metadata. */
+export type PropertyMetadata = MetadataSchema<
+  'property',
+  {
+    /** Column name. */
+    readonly column: string;
   }
 >;

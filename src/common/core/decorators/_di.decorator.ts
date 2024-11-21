@@ -1,4 +1,8 @@
-import { inject, injectable, singleton } from 'tsyringe';
+import {
+  inject,
+  injectable,
+  singleton,
+} from 'tsyringe';
 
 /** Injectable decorator. */
 export const Injectable = injectable;

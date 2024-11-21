@@ -1,5 +1,5 @@
 /** HTTP methods. */
-export const enum Method {
+export const enum HTTPMethod {
   Get = 'get',
   Post = 'post',
   Put = 'put',
@@ -8,7 +8,7 @@ export const enum Method {
 }
 
 /** HTTP status codes. */
-export const enum StatusCode {
+export const enum HTTPStatusCode {
   OK = 200,
   Created = 201,
   NoContent = 204,

@@ -2,9 +2,9 @@ import type { Class } from 'type-fest';
 
 import { MetadataFactory } from '~utils/reflect';
 
-import type { ClassDecorator, ModuleDecoratorOptions, ModuleMetadata } from '../types';
+import type { ClassDecorator, ModuleDecoratorOptions, ModuleMetadata } from '../../types';
 
-import { Singleton } from './_di.decorator';
+import { Singleton } from '../_di.decorator';
 
 /**
  * Module Decorator.
@@ -28,7 +28,7 @@ export function Module(options: ModuleDecoratorOptions = {}): ClassDecorator {
  * @param constructor Module class.
  * @param options Module options.
  */
-function defineMetadata<M>(constructor: Class<M>, { controllers = [], modules = [], providers = [] }: ModuleDecoratorOptions) {
+function defineMetadata<M extends object>(constructor: Class<M>, { controllers = [], modules = [], providers = [] }: ModuleDecoratorOptions) {
   const moduleMetadata = MetadataFactory.create<ModuleMetadata>(constructor);
 
   const baseModules = moduleMetadata.get('modules') ?? [];

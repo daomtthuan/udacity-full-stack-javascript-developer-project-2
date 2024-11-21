@@ -4,7 +4,7 @@ import type { IMetadata, IMetadataFactory } from './interfaces';
 import type { MetadataSchema } from './types';
 
 /** Metadata Factory Static. */
-export class MetadataFactoryStatic implements IMetadataFactory {
+class MetadataFactoryStatic implements IMetadataFactory {
   create<T extends MetadataSchema<string, Dictionary<unknown>>>(target: object, propertyKey?: string | symbol): IMetadata<T>;
   create<T extends MetadataSchema<string, Dictionary<unknown>>>(kind: T['$kind'], target: object, propertyKey?: string | symbol): IMetadata<T> | null;
   create<T extends MetadataSchema<string, Dictionary<unknown>>>(

@@ -1,5 +1,12 @@
 {
-  "cSpell.words": ["tsbuildinfo", "tsdoc", "tsyringe", "Udacity", "uncolorize"],
+  "cSpell.ignoreRegExpList": ["SQL TemplateStrings"],
+  "cSpell.patterns": [
+    {
+      "name": "SQL TemplateStrings",
+      "pattern": "/\\* sql \\*/[\\s]*`[\\s\\S]*`"
+    }
+  ],
+  "cSpell.words": ["thuandmt", "tsbuildinfo", "tsdoc", "tsyringe", "Udacity", "uncolorize"],
   "explorer.fileNesting.enabled": true,
   "explorer.fileNesting.patterns": {
     "*.js": "${capture}.js.map, ${capture}.min.js, ${capture}.d.ts",
@@ -12,70 +19,75 @@
   "exportall.config.folderListener": [
     "/src/common/core/app",
     "/src/common/core/constants",
+    "/src/common/core/database",
+    "/src/common/core/database/modules",
     "/src/common/core/decorators",
+    "/src/common/core/decorators/app",
+    "/src/common/core/decorators/database",
+    "/src/common/core/decorators/http",
     "/src/common/core/errors",
+    "/src/common/core/http",
     "/src/common/core/interfaces",
-    "/src/common/core/types",
-    "/src/common/core/handlers"
+    "/src/common/core/types"
   ],
   "material-icon-theme.activeIconPack": "none",
   "material-icon-theme.files.associations": {
     "router.ts": "typescript"
   },
+  "material-icon-theme.files.customClones": [
+    {
+      "base": "typescript",
+      "color": "#776e91",
+      "fileExtensions": ["module.ts"],
+      "name": "ts-module"
+    },
+    {
+      "base": "typescript",
+      "color": "#ffc107",
+      "fileExtensions": ["controller.ts"],
+      "name": "ts-controller"
+    },
+    {
+      "base": "typescript",
+      "color": "#607d8b",
+      "fileExtensions": ["constant.ts"],
+      "name": "ts-constant"
+    },
+    {
+      "base": "typescript",
+      "color": "#ab47bc",
+      "fileExtensions": ["decorator.ts"],
+      "name": "ts-decorator"
+    },
+    {
+      "base": "typescript",
+      "color": "#90caf9",
+      "fileExtensions": ["interface.ts", "type.ts"],
+      "name": "ts-type"
+    },
+    {
+      "base": "typescript",
+      "color": "#ef5350",
+      "fileExtensions": ["error.ts"],
+      "name": "ts-error"
+    },
+    {
+      "base": "typescript",
+      "color": "#daedfd",
+      "fileNames": ["index.ts", "main.ts"],
+      "name": "ts-entry"
+    }
+  ],
   "material-icon-theme.folders.associations": {
-    "utils/data": "",
-    "http": "api"
+    "http": "api",
+    "utils/data": ""
   },
   "material-icon-theme.folders.customClones": [
     {
-      "name": "ts-declaration",
       "base": "typescript",
       "color": "#1976d2",
-      "folderNames": ["declarations", "types", "interfaces"]
-    }
-  ],
-  "material-icon-theme.files.customClones": [
-    {
-      "name": "ts-module",
-      "base": "typescript",
-      "color": "#776e91",
-      "fileExtensions": ["module.ts"]
-    },
-    {
-      "name": "ts-controller",
-      "base": "typescript",
-      "color": "#ffc107",
-      "fileExtensions": ["controller.ts"]
-    },
-    {
-      "name": "ts-constant",
-      "base": "typescript",
-      "color": "#607d8b",
-      "fileExtensions": ["constant.ts"]
-    },
-    {
-      "name": "ts-decorator",
-      "base": "typescript",
-      "color": "#ab47bc",
-      "fileExtensions": ["decorator.ts"]
-    },
-    {
-      "name": "ts-type",
-      "base": "typescript",
-      "color": "#90caf9",
-      "fileExtensions": ["type.ts", "interface.ts"]
-    },
-    {
-      "name": "ts-error",
-      "base": "typescript",
-      "color": "#ef5350",
-      "fileExtensions": ["error.ts"]
-    },
-    {
-      "name": "ts-entry",
-      "base": "typescript",
-      "color": "#daedfd",
-      "fileNames": ["main.ts", "index.ts"]
+      "folderNames": ["declarations", "interfaces", "types"],
+      "name": "ts-declaration"
     }
   ],
   "typescript.tsdk": "node_modules\\typescript\\lib"

@@ -1,6 +1,6 @@
 import { MetadataFactory } from '~utils/reflect';
 
-import type { ActionMetadata, ParameterDecorator } from '../types';
+import type { ActionMetadata, ParameterDecorator } from '../../types';
 
 /**
  * Request Decorator.
@@ -92,11 +92,11 @@ function defineMetadata<A extends object>(target: A, key: keyof ActionMetadata['
  * @param parameterIndex Action parameter index.
  */
 function defineMetadataParam<A extends object>(target: A, name: string, propertyKey: string | symbol, parameterIndex: number) {
-  const actionMethodMetadata = MetadataFactory.create<ActionMetadata>(target, propertyKey);
+  const actionMetadata = MetadataFactory.create<ActionMetadata>(target, propertyKey);
 
-  const baseParameters = actionMethodMetadata.get('parameters') ?? {};
+  const baseParameters = actionMetadata.get('parameters') ?? {};
 
-  actionMethodMetadata.set('parameters', {
+  actionMetadata.set('parameters', {
     ...baseParameters,
     params: {
       ...baseParameters.params,

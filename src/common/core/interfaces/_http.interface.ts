@@ -1,6 +1,6 @@
 import type { RequestHandler } from 'express';
 
-import type { StatusCode } from '../constants';
+import type { HTTPStatusCode } from '../constants';
 import type { ActionResultBody } from '../types';
 
 /**
@@ -10,7 +10,7 @@ import type { ActionResultBody } from '../types';
  */
 export type IActionResult<T extends ActionResultBody = ActionResultBody> = {
   /** Status. */
-  status: StatusCode;
+  status: HTTPStatusCode;
 
   /** Body. */
   body: T;

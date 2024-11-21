@@ -4,7 +4,7 @@ import WinstonDailyRotateFile from 'winston-daily-rotate-file';
 
 import type { IAppConfig, IAppLogger } from '../interfaces';
 
-import { AppToken, LogLevelColor } from '../constants';
+import { InterfaceToken, LogLevelColor } from '../constants';
 import { Inject, Injectable } from '../decorators';
 
 const {
@@ -18,7 +18,7 @@ export class AppLogger implements IAppLogger {
   private readonly _logger: Winston.Logger;
 
   public constructor(
-    @Inject(AppToken.IAppConfig)
+    @Inject(InterfaceToken.IAppConfig)
     private readonly _config: IAppConfig,
   ) {
     const format = WinstonFormat.combine(
@@ -28,15 +28,12 @@ export class AppLogger implements IAppLogger {
       WinstonFormat.errors({
         stack: true,
       }),
-      WinstonFormat.printf(({ timestamp, level, message, stack, ...data }) => {
+      WinstonFormat.printf(({ timestamp, level, message, meta }) => {
         const logLevelText = `${' '.repeat(7 - level.length)}${LogLevelColor[level] || level}`;
 
         let log = `${timestamp}${logLevelText}:  ${message}`;
-        if (Object.keys(data).length) {
-          log = `${log}\n${JSON.stringify(data, null, 2)}`;
-        }
-        if (stack) {
-          log = `${log}\n${stack}`;
+        if (meta && Array.isArray(meta) && meta.length > 0) {
+          log = `${log}\n${JSON.stringify(meta, null, 2)}`;
         }
 
         return log;
@@ -74,19 +71,19 @@ export class AppLogger implements IAppLogger {
   }
 
   public error(message: string, ...meta: unknown[]) {
-    this._logger.error(message, ...meta);
+    this._logger.error(message, { meta });
   }
 
   public warn(message: string, ...meta: unknown[]) {
-    this._logger.warn(message, ...meta);
+    this._logger.warn(message, { meta });
   }
 
   public info(message: string, ...meta: unknown[]) {
-    this._logger.info(message, ...meta);
+    this._logger.info(message, { meta });
   }
 
   public debug(message: string, ...meta: unknown[]) {
-    this._logger.debug(message, ...meta);
+    this._logger.debug(message, { meta });
   }
 
   public createLogger(label: string): IAppLogger {

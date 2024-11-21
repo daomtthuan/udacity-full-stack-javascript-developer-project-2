@@ -1,5 +1,7 @@
 import { AppFactory } from '~core';
 import { AppModule } from '~modules/app.module';
 
-const app = AppFactory.create(AppModule);
-app.start();
+(async function main() {
+  const app = await AppFactory.create(AppModule);
+  app.start();
+})();

@@ -1,20 +1,12 @@
-import type { ReflectAble } from '~utils/reflect/types';
+import type { IReflectUtil } from './interfaces/_reflect-util.interface';
+import type { ReflectAble } from './types';
 
 /** Reflect Utility Static. */
-export class ReflectUtilStatic {
-  /**
-   *
-   *
-   * @template T ReflectAble Object type.
-   * @param obj Object to check.
-   * @param kind Kind of the object.
-   *
-   * @returns Returns whether the object is the specified ReflectAble type.
-   */
+class ReflectUtilStatic implements IReflectUtil {
   isType<T extends ReflectAble<string, object>>(obj: unknown, kind: T['$kind']): obj is T {
     return typeof obj === 'object' && !!obj && '$kind' in obj && obj.$kind === kind;
   }
 }
 
 /** Reflect Utility. */
-export const ReflectUtil = new ReflectUtilStatic();
+export const ReflectUtil: IReflectUtil = new ReflectUtilStatic();

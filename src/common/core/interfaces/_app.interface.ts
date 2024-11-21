@@ -1,10 +1,44 @@
-import type { InjectionToken } from 'tsyringe';
+import type { DependencyContainer, InjectionToken } from 'tsyringe';
 import type { Class } from 'type-fest';
 
-import type { AppErrorHandler, AppStartHandler, DirectoryConfig, ServerConfig } from '../types';
+import type { AppErrorHandler, AppModule, AppStartHandler, DirectoryConfig, ServerConfig } from '../types';
+
+/** Application Environment interface. */
+export interface IAppEnv {
+  readonly mode: string | undefined;
+
+  /**
+   * Get a configuration value.
+   *
+   * @param key Configuration key.
+   * @param defaultValue Default value.
+   *
+   * @returns Configuration value.
+   */
+  getString(key: string, defaultValue?: string): string;
+
+  /**
+   * Get a configuration value.
+   *
+   * @param key Configuration key.
+   * @param defaultValue Default value.
+   *
+   * @returns Configuration value.
+   */
+  getNumber(key: string, defaultValue?: number): number;
+}
 
 /** Application Container interface. */
 export interface IAppContainer {
+  /** Indicates whether the container is root. */
+  readonly isRoot: boolean;
+
+  /** Parent container. */
+  readonly parent: IAppContainer | undefined;
+
+  /** Dependency container. */
+  readonly container: DependencyContainer;
+
   /**
    * Resolve a token into an instance.
    *
@@ -23,7 +57,7 @@ export interface IAppContainer {
    *
    * @returns An instance of the module.
    */
-  resolveModule<M extends IModule>(token: Class<M>): M;
+  resolveModule<M extends object>(token: AppModule<M>): Promise<M>;
 
   /**
    * Check if module is resolved.
@@ -33,7 +67,7 @@ export interface IAppContainer {
    *
    * @returns True if module is resolved, false otherwise.
    */
-  isModuleResolved<M extends IModule>(token: Class<M>): boolean;
+  isModuleResolved<M extends object>(token: AppModule<M>): boolean;
 
   /**
    * Create a child container for module.
@@ -45,9 +79,6 @@ export interface IAppContainer {
 
 /** Application Configuration interface. */
 export interface IAppConfig {
-  /** Application mode. */
-  readonly mode: string | undefined;
-
   /** Indicates whether the application is running in production mode. */
   readonly isProduction: boolean;
 
@@ -82,7 +113,7 @@ export interface IAppFactory {
    *
    * @returns Application.
    */
-  create<M extends Class<IModule>>(Module: M): IApp;
+  create<M extends Class<object>>(Module: M): Promise<IApp>;
 }
 
 /** Application logger interface. */
@@ -128,12 +159,3 @@ export interface IAppLogger {
    */
   createLogger(label: string): IAppLogger;
 }
-
-/** Module interface. */
-export interface IModule {}
-
-/** Provider interface. */
-export interface IProvider {}
-
-/** Controller interface. */
-export interface IController {}
