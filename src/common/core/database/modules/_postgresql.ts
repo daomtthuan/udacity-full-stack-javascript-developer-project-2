@@ -3,7 +3,7 @@ import type { InjectionToken } from 'tsyringe';
 import { cyan, green } from 'ansis';
 import FileSystem from 'fs';
 import Path from 'path';
-import { Client, DatabaseError as PostgresqlDatabaseError, type QueryResult } from 'pg';
+import { Client, DatabaseError as PostgresqlDatabaseError, type QueryArrayResult, type QueryResult } from 'pg';
 
 import type { IDatabaseModule } from '../../interfaces';
 import type { InjectionModule, PostgreSqlDatabaseApi, PostgreSqlDatabaseModuleOptions } from '../../types';
@@ -66,8 +66,8 @@ export function createPostgresqlDatabaseModule(
           try {
             await this._client.connect();
 
-            await this._query()/* sql */ `
-              CREATE TABLE ${MIGRATION_TABLE.NAME} (
+            await this._queryArray()/* sql */ `
+              CREATE TABLE ${migrations?.table || MIGRATION_TABLE.NAME} (
                 ${MIGRATION_TABLE.COLUMN.NAME} VARCHAR(255) PRIMARY KEY,
                 ${MIGRATION_TABLE.COLUMN.APPLIED_AT} TIMESTAMP DEFAULT NOW()
               )
@@ -113,8 +113,12 @@ export function createPostgresqlDatabaseModule(
 
     protected get _api(): PostgreSqlDatabaseApi {
       return {
-        query: async <T extends object>(template: TemplateStringsArray, ...values: unknown[]) => {
+        query: async <T extends object>(template: TemplateStringsArray, ...values: unknown[]): Promise<QueryResult<T>> => {
           return await this._query<T>()(template, ...values);
+        },
+
+        queryArray: async <T extends unknown[]>(template: TemplateStringsArray, ...values: unknown[]) => {
+          return await this._queryArray<T>()(template, ...values);
         },
       };
     }
@@ -155,7 +159,57 @@ export function createPostgresqlDatabaseModule(
             this._logger.debug(`Execute query:\n${green(queryText)}`);
           }
 
-          return await client.query<T>(queryText, queryParams);
+          return await client.query<T>({
+            text: queryText,
+            values: queryParams,
+          });
+        } catch (error) {
+          throw DatabaseError.fromError(error);
+        }
+      };
+    }
+
+    private _queryArray<T extends unknown[]>(
+      client: Client | undefined = this._client,
+    ): (template: TemplateStringsArray, ...values: unknown[]) => Promise<QueryArrayResult<T>> {
+      if (!client) {
+        throw new DatabaseError('Database client not initialized.');
+      }
+
+      return async (template, ...values) => {
+        try {
+          const [queryText, queryParams] = template.reduce(
+            ([prevQueryText, prevParams]: [string, unknown[]], part, i) => {
+              const lint = part.replace(/^\s+|\s+$/g, '').replace(/\s+/g, ' ');
+
+              if (i >= values.length) {
+                return [lint ? `${prevQueryText} ${lint}` : prevQueryText, prevParams] as [string, unknown[]];
+              }
+
+              const value = values[i];
+
+              if (part.endsWith('$')) {
+                prevParams.push(value);
+
+                return [`${prevQueryText} ${lint}${prevParams.length}`, prevParams] as [string, unknown[]];
+              }
+
+              return [`${prevQueryText} ${lint} ${value}`, prevParams] as [string, unknown[]];
+            },
+            ['', []],
+          );
+
+          if (queryParams.length) {
+            this._logger.debug(`Execute query:\n${green(queryText)}\nParams:`, ...queryParams);
+          } else {
+            this._logger.debug(`Execute query:\n${green(queryText)}`);
+          }
+
+          return await client.query<T>({
+            rowMode: 'array',
+            text: queryText,
+            values: queryParams,
+          });
         } catch (error) {
           throw DatabaseError.fromError(error);
         }
@@ -173,14 +227,14 @@ export function createPostgresqlDatabaseModule(
 
       try {
         await adminClient.connect();
-        const databases = await this._query(adminClient)/* sql */ `
-          SELECT datname
+        const databases = await this._queryArray(adminClient)/* sql */ `
+          SELECT 1
           FROM pg_catalog.pg_database
           WHERE datname = $${database}
         `;
 
         if (!databases.rows.length) {
-          await this._query(adminClient)/* sql */ `
+          await this._queryArray(adminClient)/* sql */ `
             CREATE DATABASE ${database}
           `;
 
@@ -203,21 +257,21 @@ export function createPostgresqlDatabaseModule(
         const scriptFile = Path.resolve(migrationsDir, script);
         const scriptName = Path.basename(scriptFile, Path.extname(scriptFile));
 
-        const migrations = await this._query()/* sql */ `
-          SELECT name
+        const migrations = await this._queryArray()/* sql */ `
+          SELECT 1
           FROM ${table}
           WHERE name = $${scriptName}
         `;
 
         if (migrations.rows.length) {
-          this._logger.debug(`Migration ${scriptName} already applied.`);
+          this._logger.debug(`Migration ${cyan(scriptName)} already applied.`);
           return;
         }
 
         const migrationSQL = FileSystem.readFileSync(scriptFile, 'utf-8');
         await this._client.query(migrationSQL);
 
-        await this._query()/* sql */ `
+        await this._queryArray()/* sql */ `
           INSERT INTO ${table} (
             ${MIGRATION_TABLE.COLUMN.NAME}
           )

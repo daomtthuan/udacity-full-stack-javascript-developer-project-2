@@ -1,20 +1,27 @@
 import type { EntityStatus } from '~constants/entity';
 
+import { Property } from '~core';
+
 export abstract class Trackable {
+  /** Status of the entity. */
+  @Property('status')
+  status: EntityStatus;
+
   /** Date and time when the entity was created. */
+  @Property('created_at')
   createdAt: Date;
 
-  /** Date and time when the entity was last updated. */
-  updatedAt: Date;
-
   /** ID of the user who created the entity. */
+  @Property('created_by')
   createdBy: string;
 
-  /** ID of the user who last updated the entity. */
-  updatedBy: string;
+  /** Date and time when the entity was last updated. */
+  @Property('updated_at')
+  updatedAt: Date;
 
-  /** Status of the entity. */
-  status: EntityStatus;
+  /** ID of the user who last updated the entity. */
+  @Property('updated_by')
+  updatedBy: string;
 
   constructor({ createdAt, updatedAt, createdBy, updatedBy, status }: Trackable) {
     this.createdAt = createdAt;

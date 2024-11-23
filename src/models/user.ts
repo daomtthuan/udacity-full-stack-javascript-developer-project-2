@@ -1,4 +1,4 @@
-import { Entity } from '~core';
+import { Entity, Property } from '~core';
 
 import { Trackable } from './trackable';
 
@@ -6,41 +6,37 @@ import { Trackable } from './trackable';
 @Entity('users')
 export class User extends Trackable {
   /** Unique identifier of the user. */
+  @Property('id')
   id: string;
 
-  /** Email of the user. */
-  email: string;
+  /** Username of the user. */
+  @Property('username')
+  username: string;
 
   /** Password of the user. */
+  @Property('password')
   password: string;
 
-  /** First name of the user. */
-  firstName: string;
+  /** Full name of the user. */
+  @Property('name')
+  name: string;
 
-  /** Last name of the user. */
-  lastName: string;
+  /** Email of the user. */
+  @Property('email')
+  email: string;
 
-  /** Role of the user. */
-  role: string;
+  /** Avatar url of the user. */
+  @Property('avatar_url')
+  avatarUrl: string;
 
-  constructor({ id, email, password, firstName, lastName, role, ...trackable }: User) {
+  constructor({ id, username, password, name, email, avatarUrl, ...trackable }: User) {
     super(trackable);
 
     this.id = id;
-    this.email = email;
+    this.username = username;
     this.password = password;
-    this.firstName = firstName;
-    this.lastName = lastName;
-    this.role = role;
-  }
-
-  /** Get full name of the user. */
-  get fullName(): string {
-    return `${this.firstName} ${this.lastName}`;
-  }
-
-  /** Get initials of the user. */
-  get initials(): string {
-    return `${this.firstName[0]}${this.lastName[0]}`;
+    this.name = name;
+    this.email = email;
+    this.avatarUrl = avatarUrl;
   }
 }

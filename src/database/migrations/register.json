@@ -1,3 +1,3 @@
 {
-  "scripts": ["241119_init.sql"]
+  "scripts": ["241119_init.postgre.sql", "241123_data.postgre.sql"]
 }

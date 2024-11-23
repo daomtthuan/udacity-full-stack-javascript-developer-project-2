@@ -1,4 +1,4 @@
-import type { QueryResult } from 'pg';
+import type { QueryArrayResult, QueryResult } from 'pg';
 import type { EmptyObject } from 'type-fest';
 
 import type { ReflectAble } from '~utils/reflect';
@@ -54,12 +54,24 @@ export type PostgreSqlDatabaseApi = {
   /**
    * Execute query.
    *
+   * @template T Result type.
    * @param template Query template.
    * @param values Query values.
    *
    * @returns Query result.
    */
   query: <T extends object>(template: TemplateStringsArray, ...values: unknown[]) => Promise<QueryResult<T>>;
+
+  /**
+   * Execute query array.
+   *
+   * @template T Result type.
+   * @param template Query template.
+   * @param values Query values.
+   *
+   * @returns Query result.
+   */
+  queryArray: <T extends unknown[]>(template: TemplateStringsArray, ...values: unknown[]) => Promise<QueryArrayResult<T>>;
 };
 
 /** Database Module options. */

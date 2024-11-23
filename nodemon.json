@@ -4,5 +4,5 @@
   "exec": "ts-node -r tsconfig-paths/register src/main.ts --mode development",
   "watch": ["main.ts", "src/**/*", ".env.development"],
   "ignore": [".git", "node_modules/**/node_modules"],
-  "ext": "js,ts,json"
+  "ext": "js,ts,json,sql"
 }
