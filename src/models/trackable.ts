@@ -3,7 +3,7 @@ import type { EntityStatus } from '~constants/entity';
 import { Property } from '~core';
 
 export abstract class Trackable {
-  /** Status of the entity. */
+  /** Status of the entity (active, inactive, etc.). */
   @Property('status')
   status: EntityStatus;
 
