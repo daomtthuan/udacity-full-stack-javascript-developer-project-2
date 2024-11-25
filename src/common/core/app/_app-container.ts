@@ -3,10 +3,14 @@ import type { Class } from 'type-fest';
 
 import { container } from 'tsyringe';
 
-import type { IAppContainer } from '../interfaces';
-import type { AppModule, InjectionModule } from '../types';
+import { MetadataFactory } from '~utils/reflect';
 
-import { InterfaceToken } from '../constants';
+import type { IAppContainer } from '../interfaces';
+import type { AppModule, ProviderMetadata } from '../types';
+
+import { CoreToken, ProviderScope } from '../constants';
+import { DefinitionError } from '../errors';
+import { ModuleMetadata } from '../types';
 import { AppConfig } from './_app-config';
 import { AppLogger } from './_app-logger';
 
@@ -24,55 +28,64 @@ class AppContainerStatic implements IAppContainer {
     }
   }
 
+  registerProvider<P extends object>(provider: Class<P>) {
+    const providerMetadata = MetadataFactory.create<ProviderMetadata>('provider', provider);
+    if (!providerMetadata) {
+      throw new DefinitionError(`Class '${provider.name}' not decorated with '@Provider'.`);
+    }
+
+    const token = providerMetadata.get('token') ?? provider;
+    const scope = providerMetadata.get('scope') ?? ProviderScope.Default;
+
+    if (scope === ProviderScope.Default) {
+      this.container.registerSingleton(token, provider);
+    } else {
+      this.container.register(token, provider);
+    }
+  }
+
+  async registerModule<M extends object>(module: AppModule<M>) {
+    const moduleClass = typeof module === 'function' ? module : module.module;
+    const moduleMetadata = MetadataFactory.create<ModuleMetadata>('module', moduleClass);
+    if (!moduleMetadata) {
+      throw new DefinitionError(`Class '${moduleClass.name}' not decorated with '@Module'.`);
+    }
+
+    const moduleToken = moduleMetadata.get('token') ?? moduleClass;
+    this.container.registerSingleton(moduleToken, moduleClass);
+
+    const instance = this.container.resolve(moduleToken);
+    AppContainerStatic.resolvedModules.set(moduleToken, instance);
+
+    if (typeof module !== 'function') {
+      await Promise.resolve(module?.onRegister?.(instance));
+    }
+
+    return instance;
+  }
+
+  isModuleRegistered<M extends object>(module: AppModule<M>): boolean {
+    const moduleClass = typeof module === 'function' ? module : module.module;
+    const moduleMetadata = MetadataFactory.create<ModuleMetadata>('module', moduleClass);
+    if (!moduleMetadata) {
+      throw new DefinitionError(`Class '${moduleClass.name}' not decorated with '@Module'.`);
+    }
+
+    const moduleToken = moduleMetadata.get('token') ?? moduleClass;
+    return AppContainerStatic.resolvedModules.has(moduleToken);
+  }
+
   resolve<T>(token: InjectionToken<T>): T {
     return this.container.resolve(token);
-  }
-
-  async resolveModule<M extends object>(module: AppModule<M>): Promise<M> {
-    if (typeof module === 'function') {
-      return this._resolveClassModule(module);
-    }
-
-    return await this._resolveInjectionModule(module);
-  }
-
-  isModuleResolved<M extends object>(token: AppModule<M>): boolean {
-    if (typeof token === 'function') {
-      return AppContainerStatic.resolvedModules.has(token);
-    }
-
-    return AppContainerStatic.resolvedModules.has(token.token);
   }
 
   createModuleContainer() {
     return new AppContainerStatic(false, this, this.container.createChildContainer());
   }
 
-  private _resolveClassModule<M extends object>(module: Class<M>): M {
-    this.container.registerSingleton(module);
-    const instance = this.container.resolve(module);
-
-    AppContainerStatic.resolvedModules.set(module, instance);
-
-    return instance;
-  }
-
-  private async _resolveInjectionModule<M extends object>(module: InjectionModule<M>): Promise<M> {
-    this.container.registerSingleton(module.token, module.module);
-    const instance = this.container.resolve(module.token);
-
-    AppContainerStatic.resolvedModules.set(module.token, instance);
-
-    if ('onResolved' in module && module.onResolved) {
-      await Promise.resolve(module.onResolved(instance));
-    }
-
-    return instance;
-  }
-
   private _registerDependency() {
-    this.container.registerSingleton(InterfaceToken.IAppConfig, AppConfig);
-    this.container.registerSingleton(InterfaceToken.IAppLogger, AppLogger);
+    this.container.registerSingleton(CoreToken.IAppConfig, AppConfig);
+    this.container.registerSingleton(CoreToken.IAppLogger, AppLogger);
   }
 }
 

@@ -1,33 +1,53 @@
 import type { EntityStatus } from '~constants/entity';
 
-import { Property } from '~core';
+import { ManyToOne, Property } from '~core';
+import { User } from '~models/user';
 
-export abstract class Trackable {
+/** Trackable properties. */
+export interface ITrackableProps {
   /** Status of the entity (active, inactive, etc.). */
-  @Property('status')
   status: EntityStatus;
 
   /** Date and time when the entity was created. */
-  @Property('created_at')
-  createdAt: Date;
+  createdAt?: Date | undefined;
 
   /** ID of the user who created the entity. */
-  @Property('created_by')
-  createdBy: string;
+  createdByUserId?: string | undefined;
 
   /** Date and time when the entity was last updated. */
-  @Property('updated_at')
-  updatedAt: Date;
+  updatedAt?: Date | undefined;
 
   /** ID of the user who last updated the entity. */
-  @Property('updated_by')
-  updatedBy: string;
+  updatedByUserId?: string | undefined;
+}
 
-  constructor({ createdAt, updatedAt, createdBy, updatedBy, status }: Trackable) {
-    this.createdAt = createdAt;
-    this.updatedAt = updatedAt;
-    this.createdBy = createdBy;
-    this.updatedBy = updatedBy;
+export class Trackable implements ITrackableProps {
+  @Property('status')
+  status: EntityStatus;
+
+  @Property('created_at')
+  createdAt?: Date | undefined;
+
+  @Property('created_by_user_id')
+  createdByUserId?: string | undefined;
+
+  @Property('updated_at')
+  updatedAt?: Date | undefined;
+
+  @Property('updated_by_user_id')
+  updatedByUserId?: string | undefined;
+
+  @ManyToOne(() => User, (user) => user.id)
+  createdBy?: User | undefined;
+
+  @ManyToOne(() => User, (user) => user.id)
+  updatedBy?: User | undefined;
+
+  constructor({ status, createdAt, createdByUserId, updatedAt, updatedByUserId }: ITrackableProps) {
     this.status = status;
+    this.createdAt = createdAt;
+    this.createdByUserId = createdByUserId;
+    this.updatedAt = updatedAt;
+    this.updatedByUserId = updatedByUserId;
   }
 }

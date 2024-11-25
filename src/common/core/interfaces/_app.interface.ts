@@ -40,6 +40,32 @@ export interface IAppContainer {
   readonly container: DependencyContainer;
 
   /**
+   * Register provider.
+   *
+   * @template P Provider type.
+   * @param provider The provider.
+   */
+  registerProvider<P extends object>(provider: Class<P>): void;
+
+  /**
+   * Register module.
+   *
+   * @template M Module type.
+   * @param module The module.
+   */
+  registerModule<M extends object>(module: AppModule<M>): Promise<void>;
+
+  /**
+   * Check if module is registered.
+   *
+   * @template M Module type.
+   * @param module The module.
+   *
+   * @returns True if module is registered, false otherwise.
+   */
+  isModuleRegistered<M extends object>(module: AppModule<M>): boolean;
+
+  /**
    * Resolve a token into an instance.
    *
    * @template T Instance type.
@@ -48,26 +74,6 @@ export interface IAppContainer {
    * @returns An instance of the dependency.
    */
   resolve<T>(token: InjectionToken<T>): T;
-
-  /**
-   * Resolve a module into an instance.
-   *
-   * @template M Module type.
-   * @param token The dependency token.
-   *
-   * @returns An instance of the module.
-   */
-  resolveModule<M extends object>(token: AppModule<M>): Promise<M>;
-
-  /**
-   * Check if module is resolved.
-   *
-   * @template M Module type.
-   * @param token The dependency token.
-   *
-   * @returns True if module is resolved, false otherwise.
-   */
-  isModuleResolved<M extends object>(token: AppModule<M>): boolean;
 
   /**
    * Create a child container for module.
@@ -113,7 +119,7 @@ export interface IAppFactory {
    *
    * @returns Application.
    */
-  create<M extends Class<object>>(Module: M): Promise<IApp>;
+  create<M extends Class<object>>(moduleClass: M): Promise<IApp>;
 }
 
 /** Application logger interface. */

@@ -46,11 +46,21 @@ export type DatabaseModuleOptionsBase<T extends DatabaseModuleType, O extends ob
   } & O
 >;
 
-/** Postgresql Database Module options. */
-export type PostgreSqlDatabaseModuleOptions = DatabaseModuleOptionsBase<DatabaseModuleType.Postgresql, EmptyObject>;
+/** Postgresql Module options. */
+export type PostgresqlModuleOptions = DatabaseModuleOptionsBase<DatabaseModuleType.Postgresql, EmptyObject>;
+
+/**
+ * Database API base.
+ *
+ * @template A Database API type.
+ */
+export type DatabaseApiBase<A extends object> = A & {
+  /** Close database connection. */
+  close: () => Promise<void>;
+};
 
 /** Postgresql Database API. */
-export type PostgreSqlDatabaseApi = {
+export type PostgresqlDatabaseApi = DatabaseApiBase<{
   /**
    * Execute query.
    *
@@ -72,10 +82,10 @@ export type PostgreSqlDatabaseApi = {
    * @returns Query result.
    */
   queryArray: <T extends unknown[]>(template: TemplateStringsArray, ...values: unknown[]) => Promise<QueryArrayResult<T>>;
-};
+}>;
 
 /** Database Module options. */
-export type DatabaseModuleOptions = PostgreSqlDatabaseModuleOptions;
+export type DatabaseModuleOptions = PostgresqlModuleOptions;
 
 /** Database API. */
-export type DatabaseApi = PostgreSqlDatabaseApi;
+export type DatabaseApi = PostgresqlDatabaseApi;

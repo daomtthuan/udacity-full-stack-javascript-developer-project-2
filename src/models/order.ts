@@ -2,24 +2,35 @@ import type { OrderStage } from '~constants/entity';
 
 import { Entity, Property } from '~core';
 
+import type { ITrackableProps } from './trackable';
+
 import { Trackable } from './trackable';
 
-/** Order model. */
-@Entity('orders')
-export class Order extends Trackable {
+/** Order properties. */
+export interface IOrderProps {
   /** Unique identifier of the order. */
-  @Property('id')
   id: string;
 
   /** User ID who placed the order. */
-  @Property('user_id')
   userId: string;
 
   /** Order stage (created, pending, confirmed, etc.). */
+  stage: OrderStage;
+}
+
+/** Order model. */
+@Entity('orders')
+export class Order extends Trackable implements IOrderProps {
+  @Property('id')
+  id: string;
+
+  @Property('user_id')
+  userId: string;
+
   @Property('stage')
   stage: OrderStage;
 
-  constructor({ id, userId, stage, ...trackable }: Order) {
+  constructor({ id, userId, stage }: IOrderProps, trackable: ITrackableProps) {
     super(trackable);
 
     this.id = id;

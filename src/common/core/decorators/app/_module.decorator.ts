@@ -28,7 +28,7 @@ export function Module(options: ModuleDecoratorOptions = {}): ClassDecorator {
  * @param constructor Module class.
  * @param options Module options.
  */
-function defineMetadata<M extends object>(constructor: Class<M>, { controllers = [], modules = [], providers = [] }: ModuleDecoratorOptions) {
+function defineMetadata<M extends object>(constructor: Class<M>, { token, controllers = [], modules = [], providers = [] }: ModuleDecoratorOptions) {
   const moduleMetadata = MetadataFactory.create<ModuleMetadata>(constructor);
 
   const baseModules = moduleMetadata.get('modules') ?? [];
@@ -37,6 +37,7 @@ function defineMetadata<M extends object>(constructor: Class<M>, { controllers =
 
   moduleMetadata.define({
     $kind: 'module',
+    token: token ?? constructor,
     controllers: [...baseControllers, ...controllers],
     providers: [...baseProviders, ...providers],
     modules: [...baseModules, ...modules],

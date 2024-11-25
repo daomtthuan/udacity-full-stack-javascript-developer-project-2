@@ -1,23 +1,34 @@
 import { Entity, Property } from '~core';
 
+import type { ITrackableProps } from './trackable';
+
 import { Trackable } from './trackable';
 
-/** Category model. */
-@Entity('categories')
-export class Category extends Trackable {
+/** Category properties. */
+export interface ICategoryProps {
   /** Unique identifier of the category. */
-  @Property('id')
   id: string;
 
   /** Name of the category. */
-  @Property('name')
   name: string;
 
   /** Description of the category. */
+  description: string;
+}
+
+/** Category model. */
+@Entity('categories')
+export class Category extends Trackable implements ICategoryProps {
+  @Property('id')
+  id: string;
+
+  @Property('name')
+  name: string;
+
   @Property('description')
   description: string;
 
-  constructor({ id, name, description, ...trackable }: Category) {
+  constructor({ id, name, description }: ICategoryProps, trackable: ITrackableProps) {
     super(trackable);
 
     this.id = id;

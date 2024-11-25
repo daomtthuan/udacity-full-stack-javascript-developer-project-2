@@ -3,7 +3,7 @@
   "cSpell.patterns": [
     {
       "name": "SQL TemplateStrings",
-      "pattern": "/\\* sql \\*/[\\s]*`[\\s\\S]*`"
+      "pattern": "sql`[\\s\\S]*`"
     }
   ],
   "cSpell.words": ["postgre", "thuandmt", "tsbuildinfo", "tsdoc", "tsyringe", "Udacity", "uncolorize"],

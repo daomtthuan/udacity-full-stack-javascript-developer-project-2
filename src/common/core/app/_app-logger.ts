@@ -4,7 +4,7 @@ import WinstonDailyRotateFile from 'winston-daily-rotate-file';
 
 import type { IAppConfig, IAppLogger } from '../interfaces';
 
-import { InterfaceToken, LogLevelColor } from '../constants';
+import { CoreToken, LogLevelColor } from '../constants';
 import { Inject, Injectable } from '../decorators';
 
 const {
@@ -18,7 +18,7 @@ export class AppLogger implements IAppLogger {
   private readonly _logger: Winston.Logger;
 
   public constructor(
-    @Inject(InterfaceToken.IAppConfig)
+    @Inject(CoreToken.IAppConfig)
     private readonly _config: IAppConfig,
   ) {
     const format = WinstonFormat.combine(

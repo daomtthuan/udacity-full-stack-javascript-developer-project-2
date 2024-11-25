@@ -11,34 +11,34 @@ import type { IMetadata } from '~utils/reflect';
 import { StringUtil } from '~utils/data';
 import { MetadataFactory } from '~utils/reflect';
 
-import type { IApp, IAppConfig, IAppFactory, IAppLogger } from '../interfaces';
-import type { AppModule } from '../types';
+import type { IApp, IAppConfig, IAppContainer, IAppFactory, IAppLogger } from '../interfaces';
+import type { AppModule, ProviderMetadata } from '../types';
 
-import { HTTPMethod, HTTPStatusCode, InterfaceToken } from '../constants';
-import { DefinitionError, ReflectionError, ServerError } from '../errors';
+import { CoreToken, HTTPMethod, HTTPStatusCode } from '../constants';
+import { DefinitionError, ServerError } from '../errors';
 import { ActionResult } from '../http';
-import { ActionMetadata, ControllerMetadata, ModuleInstanceMetadata, ModuleMetadata } from '../types';
+import { ActionMetadata, ControllerMetadata, ModuleMetadata } from '../types';
 import { AppContainer } from './_app-container';
+import { AppEnv } from './_app-env';
 
 /** Application Factory Static. */
 class AppFactoryStatic implements IAppFactory {
-  private readonly _mode: string | undefined;
   private readonly _config: IAppConfig;
   private readonly _logger: IAppLogger;
 
   constructor() {
-    this._config = AppContainer.resolve<IAppConfig>(InterfaceToken.IAppConfig);
-    this._logger = AppContainer.resolve<IAppLogger>(InterfaceToken.IAppLogger).createLogger('App');
+    this._config = AppContainer.resolve<IAppConfig>(CoreToken.IAppConfig);
+    this._logger = AppContainer.resolve<IAppLogger>(CoreToken.IAppLogger).createLogger('AppFactory');
 
     this._logger.debug('Initialized.');
   }
 
-  async create<M extends Class<object>>(module: M): Promise<IApp> {
-    this._logger.info(`Application with mode: ${cyan(this._mode ?? 'default')}, isProduction: ${cyan(this._config.isProduction ? 'true' : 'false')}.`);
+  async create<M extends Class<object>>(moduleClass: M): Promise<IApp> {
+    this._logger.info(`Application create with mode: ${cyan(AppEnv.mode ?? 'default')}, isProduction: ${cyan(this._config.isProduction ? 'true' : 'false')}.`);
 
     const app = Express();
     this._registerMiddlewares(app);
-    await this._registerModule(app, module);
+    await this._registerModule(app, AppContainer, moduleClass);
 
     this._logger.debug(`Application created.`);
 
@@ -74,53 +74,48 @@ class AppFactoryStatic implements IAppFactory {
     app.use(Compression());
   }
 
-  private async _registerModule<M extends object>(app: Express.Express, module: AppModule<M>) {
-    const moduleName = (typeof module === 'function' ? module.name : module.token).toString();
-
-    const moduleMetadata = MetadataFactory.create<ModuleMetadata>('module', typeof module === 'function' ? module : module.module);
+  private async _registerModule<M extends object>(app: Express.Express, container: IAppContainer, module: AppModule<M>) {
+    const moduleClass = typeof module === 'function' ? module : module.module;
+    const moduleMetadata = MetadataFactory.create<ModuleMetadata>('module', moduleClass);
     if (!moduleMetadata) {
-      throw new DefinitionError(`Class ${moduleName} not decorated with @Module.`);
+      throw new DefinitionError(`Class ${moduleClass.name} not decorated with @Module.`);
     }
 
-    if (AppContainer.isModuleResolved(module)) {
+    if (container.isModuleRegistered(module)) {
       return;
     }
 
+    const moduleName = moduleMetadata.get('token')?.toString() ?? moduleClass.name;
     this._logger.debug(`Registering module ${cyan(moduleName)}.`);
 
-    const moduleInstance = await AppContainer.resolveModule(module);
-    this._defineModuleInstanceMetadata(moduleInstance);
+    await container.registerModule(module);
+    const moduleContainer = container.createModuleContainer();
 
-    const modules = moduleMetadata.get('modules') ?? [];
-    for (const module of modules) {
-      await this._registerModule(app, module);
-    }
+    const providers = moduleMetadata.get('providers') ?? [];
+    providers.forEach((provider) => {
+      this._registerProvider(moduleContainer, provider);
+    });
 
     const controllers = moduleMetadata.get('controllers') ?? [];
     controllers.forEach((controller) => {
-      this._registerController(app, moduleInstance, controller);
+      this._registerController(app, moduleContainer, controller);
     });
+
+    const modules = moduleMetadata.get('modules') ?? [];
+    for (const module of modules) {
+      await this._registerModule(app, moduleContainer, module);
+    }
   }
 
-  private _registerController<M extends object, C extends Class<object>>(app: Express.Express, moduleInstance: M, controller: C) {
-    const controllerMetadata = MetadataFactory.create<ControllerMetadata>('controller', controller);
+  private _registerController<C extends Class<object>>(app: Express.Express, container: IAppContainer, controllerClass: C) {
+    const controllerMetadata = MetadataFactory.create<ControllerMetadata>('controller', controllerClass);
     if (!controllerMetadata) {
-      throw new DefinitionError(`Class ${controller.name} not decorated with @Controller.`);
+      throw new DefinitionError(`Class ${controllerClass.name} not decorated with @Controller.`);
     }
 
-    const moduleInstanceMetadata = MetadataFactory.create<ModuleInstanceMetadata>('module-instance', moduleInstance);
-    if (!moduleInstanceMetadata) {
-      throw new ReflectionError(`Module ${moduleInstance.constructor.name} instance metadata not found.`);
-    }
+    this._logger.debug(`Registering controller ${cyan(controllerClass.name)}.`);
 
-    const moduleContainer = moduleInstanceMetadata?.get('container');
-    if (!moduleContainer) {
-      throw new ReflectionError(`Module ${moduleInstance.constructor.name} container not found.`);
-    }
-
-    this._logger.debug(`Registering controller ${cyan(controller.name)}.`);
-
-    const controllerInstance = moduleContainer.resolve(controller);
+    const controllerInstance = container.resolve(controllerClass);
 
     const controllerPath = controllerMetadata.get('path') || '/';
     const controllerActions = controllerMetadata.get('actions') ?? [];
@@ -227,13 +222,13 @@ class AppFactoryStatic implements IAppFactory {
     });
   }
 
-  private _defineModuleInstanceMetadata<M extends object>(moduleInstance: M) {
-    const moduleInstanceMetadata = MetadataFactory.create<ModuleInstanceMetadata>(moduleInstance);
+  private _registerProvider<P extends object>(container: IAppContainer, providerClass: Class<P>) {
+    const providerMetadata = MetadataFactory.create<ProviderMetadata>('provider', providerClass);
+    if (!providerMetadata) {
+      throw new DefinitionError(`Class ${providerClass.name} not decorated with @Provider.`);
+    }
 
-    moduleInstanceMetadata.define({
-      $kind: 'module-instance',
-      container: AppContainer.createModuleContainer(),
-    });
+    container.registerProvider(providerClass);
   }
 
   private get _baseUrl(): string {

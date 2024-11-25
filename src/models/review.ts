@@ -1,31 +1,46 @@
 import { Entity, Property } from '~core';
 
+import type { ITrackableProps } from './trackable';
+
 import { Trackable } from './trackable';
 
-/** Review model. */
-@Entity('reviews')
-export class Review extends Trackable {
+/** Review properties. */
+export interface IReviewProps {
   /** Unique identifier of the review. */
-  @Property('id')
   id: string;
 
   /** ID of the user who wrote the review. */
-  @Property('user_id')
   userId: string;
 
   /** ID of the product being reviewed. */
-  @Property('product_id')
   productId: string;
 
   /** Rating given to the product. */
-  @Property('rating')
   rating: number;
 
   /** Comment about the product. */
+  comment: string;
+}
+
+/** Review model. */
+@Entity('reviews')
+export class Review extends Trackable implements IReviewProps {
+  @Property('id')
+  id: string;
+
+  @Property('user_id')
+  userId: string;
+
+  @Property('product_id')
+  productId: string;
+
+  @Property('rating')
+  rating: number;
+
   @Property('comment')
   comment: string;
 
-  constructor({ id, userId, productId, rating, comment, ...trackable }: Review) {
+  constructor({ id, userId, productId, rating, comment }: IReviewProps, trackable: ITrackableProps) {
     super(trackable);
 
     this.id = id;

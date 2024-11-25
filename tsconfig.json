@@ -21,9 +21,11 @@
       "~core": ["src/common/core"],
       "~utils/*": ["src/common/utils/*"],
       "~constants/*": ["src/constants/*"],
+      "~controllers/*": ["src/controllers/*"],
       "~database/*": ["src/database/*"],
       "~models/*": ["src/models/*"],
-      "~modules/*": ["src/modules/*"]
+      "~modules/*": ["src/modules/*"],
+      "~services/*": ["src/services/*"]
     },
 
     // # JavaScript Support
@@ -53,8 +55,6 @@
     "noImplicitThis": true,
     "useUnknownInCatchVariables": true,
     "alwaysStrict": true,
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
     "exactOptionalPropertyTypes": true,
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true,
@@ -65,5 +65,5 @@
     // # Completeness
     "skipLibCheck": true
   },
-  "include": ["src", "types", "test", "src/**/*.json"]
+  "include": ["src", "types", "test"]
 }

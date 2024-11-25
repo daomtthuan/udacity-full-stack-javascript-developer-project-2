@@ -2,6 +2,13 @@ import { MetadataFactory } from '~utils/reflect';
 
 import type { EntityMetadata, PropertyDecorator, PropertyDecoratorOptions, PropertyMetadata } from '../../types';
 
+/**
+ * Property Decorator.
+ *
+ * @param options Property Decorator options.
+ *
+ * @returns Property Decorator.
+ */
 export function Property(options: PropertyDecoratorOptions | string): PropertyDecorator {
   return (target, propertyKey) => {
     if (typeof options === 'string') {

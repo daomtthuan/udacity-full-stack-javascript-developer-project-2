@@ -2,15 +2,14 @@
   "version": "0.2.0",
   "configurations": [
     {
+      "name": "Debug",
       "type": "node",
       "request": "launch",
-      "name": "Launch Program",
+      "runtimeExecutable": "nodemon",
       "program": "${workspaceFolder}/src/main.ts",
-      "preLaunchTask": "npm: build",
-      "outFiles": ["${workspaceFolder}/dist/**/*.js"],
-      "outputCapture": "std",
-      "sourceMaps": true,
-      "args": ["--mode", "development"]
+      "restart": true,
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen"
     }
   ]
 }

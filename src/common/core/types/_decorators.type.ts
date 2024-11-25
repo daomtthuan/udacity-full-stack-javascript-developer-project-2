@@ -1,6 +1,7 @@
+import type { InjectionToken } from 'tsyringe';
 import type { Class, Constructor } from 'type-fest';
 
-import type { HTTPMethod } from '../constants';
+import type { HTTPMethod, ProviderScope } from '../constants';
 import type { AppModule } from './_app.type';
 
 /**
@@ -33,6 +34,9 @@ export type ParameterDecorator = <T extends object>(instance: T, propertyKey: st
 
 /** Module Decorator options. */
 export type ModuleDecoratorOptions = {
+  /** Token of the module. */
+  readonly token?: InjectionToken;
+
   /** Modules. */
   readonly modules?: AppModule<object>[];
 
@@ -58,6 +62,15 @@ export type ActionDecoratorOptions = {
   readonly path?: string;
 };
 
+/** Provider Decorator options. */
+export type ProviderDecoratorOptions = {
+  /** Token of the provider. */
+  token?: InjectionToken;
+
+  /** Lifecycle scope. */
+  scope?: ProviderScope;
+};
+
 /** Entity Decorator options. */
 export type EntityDecoratorOptions = {
   /** Table name. */
@@ -69,3 +82,11 @@ export type PropertyDecoratorOptions = {
   /** Column name. */
   readonly column: string;
 };
+
+/**
+ * Relation Decorator options.
+ *
+ * @template E Entity type.
+ * @param entity Entity instance.
+ */
+export type RelationDecoratorOptions<E extends object> = (entity: E) => E[keyof E];

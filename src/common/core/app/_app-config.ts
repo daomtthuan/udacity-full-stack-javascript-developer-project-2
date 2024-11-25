@@ -1,7 +1,10 @@
 import Path from 'path';
 
 import type { IAppConfig } from '../interfaces';
-import type { DirectoryConfig, ServerConfig } from '../types';
+import type {
+  DirectoryConfig,
+  ServerConfig,
+} from '../types';
 
 import { Injectable } from '../decorators';
 import { ConfigurationError } from '../errors';

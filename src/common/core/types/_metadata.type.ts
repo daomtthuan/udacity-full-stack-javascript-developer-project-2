@@ -1,15 +1,18 @@
+import type { InjectionToken } from 'tsyringe';
 import type { Class } from 'type-fest';
 
 import type { MetadataSchema } from '~utils/reflect';
 
-import type { HTTPMethod } from '../constants';
-import type { IAppContainer } from '../interfaces';
+import type { HTTPMethod, ProviderScope } from '../constants';
 import type { AppModule } from './_app.type';
 
 /** Module metadata. */
 export type ModuleMetadata = MetadataSchema<
   'module',
   {
+    /** Token of the module. */
+    readonly token: InjectionToken;
+
     /** Modules. */
     readonly modules: AppModule<object>[];
 
@@ -18,15 +21,6 @@ export type ModuleMetadata = MetadataSchema<
 
     /** Providers. */
     readonly providers: Class<object>[];
-  }
->;
-
-/** Module Instance metadata. */
-export type ModuleInstanceMetadata = MetadataSchema<
-  'module-instance',
-  {
-    /** Module Dependencies Container. */
-    container: IAppContainer;
   }
 >;
 
@@ -80,6 +74,18 @@ export type ActionMetadata = MetadataSchema<
         };
       };
     };
+  }
+>;
+
+/** Provider metadata. */
+export type ProviderMetadata = MetadataSchema<
+  'provider',
+  {
+    /** Token of the provider. */
+    readonly token: InjectionToken;
+
+    /** Scope of the provider. */
+    readonly scope: ProviderScope;
   }
 >;
 

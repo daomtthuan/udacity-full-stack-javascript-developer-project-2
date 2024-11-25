@@ -1,6 +1,5 @@
 import { AppToken } from '~constants/di';
 import { AppEnv, DatabaseFactory, DatabaseModuleType } from '~core';
-import { scripts } from '~database/migrations/register.json';
 
 /** Create database module. */
 export const DatabaseModule = DatabaseFactory.createModule(AppToken.IDatabaseModule, {
@@ -14,6 +13,6 @@ export const DatabaseModule = DatabaseFactory.createModule(AppToken.IDatabaseMod
   },
   migrations: {
     dir: AppEnv.getString('DATABASE_MIGRATIONS_DIR'),
-    scripts,
+    scripts: ['241119_init.postgre.sql', '241123_data.postgre.sql'],
   },
 });

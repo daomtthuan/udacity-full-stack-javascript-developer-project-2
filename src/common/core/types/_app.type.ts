@@ -1,4 +1,3 @@
-import type { InjectionToken } from 'tsyringe';
 import type { Class } from 'type-fest';
 
 /** Server Config. */
@@ -28,18 +27,15 @@ export type AppErrorHandler = (error: Error) => void;
  * @template T Module Type.
  */
 export type InjectionModule<T extends object> = {
-  /** Module Token. */
-  token: InjectionToken;
-
   /** Module Class. */
   module: Class<T>;
 
   /**
-   * Module Resolved Handler.
+   * Module Register Handler.
    *
    * @param module Module instance.
    */
-  onResolved?(module: T): void | Promise<void>;
+  onRegister?(module: T): void | Promise<void>;
 };
 
 /**
