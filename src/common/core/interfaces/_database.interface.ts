@@ -1,5 +1,4 @@
 import type { InjectionToken } from 'tsyringe';
-import type { Class } from 'type-fest';
 
 import type { DatabaseApi, DatabaseModuleOptions, InjectionModule } from '../types';
 
@@ -50,34 +49,4 @@ export interface IDatabaseModule<A extends DatabaseApi> {
 
   /** Initialize database. */
   init(): Promise<void>;
-
-  /**
-   * Create repository.
-   *
-   * @template E Entity type.
-   * @param entity Entity class.
-   */
-  createRepository<E extends object>(entityClass: Class<E>): IRepository<E>;
-}
-
-/** Repository interface. */
-export interface IRepository<E extends object> {
-  /**
-   * Add where clause.
-   *
-   * @param predicate Predicate function.
-   *
-   * @returns Repository.
-   */
-  where(predicate: (entity: E) => boolean): IRepository<E>;
-
-  /**
-   * Select entities.
-   *
-   * @template T Result type.
-   * @param mapper Mapper function.
-   *
-   * @returns Selected entities.
-   */
-  select<T = E>(mapper?: (entity: E) => T): Promise<T[]>;
 }

@@ -2,16 +2,15 @@ import type { InjectionToken } from 'tsyringe';
 import type { Class } from 'type-fest';
 
 import { cyan, green } from 'ansis';
-import { PostgresqlRepositoryFactory } from 'src/common/core/database/postgresql/_repository-factory';
 
-import { MetadataFactory, ReflectUtil } from '~utils/reflect';
+import { MetadataFactory } from '~utils/reflect';
 
-import type { IAppLogger, IDatabaseModule, IRepository } from '../../interfaces';
-import type { DatabaseApi, DatabaseModuleOptions, EntityMetadata, PostgresqlModuleOptions } from '../../types';
+import type { IAppLogger, IDatabaseModule } from '../../interfaces';
+import type { DatabaseApi, DatabaseModuleOptions, EntityMetadata, PropertyMetadata } from '../../types';
 
 import { AppContainer } from '../../app';
-import { CoreToken, DatabaseModuleType } from '../../constants';
-import { ConfigurationError, DatabaseError } from '../../errors';
+import { CoreToken } from '../../constants';
+import { DefinitionError } from '../../errors';
 
 /**
  * Database Module Base.
@@ -60,20 +59,6 @@ export abstract class DatabaseModuleBase<A extends DatabaseApi> implements IData
     this._isInitialized = true;
   }
 
-  createRepository<E extends object>(entityClass: Class<E>): IRepository<E> {
-    const entityMetadata = MetadataFactory.create<EntityMetadata>('entity', entityClass);
-    if (!entityMetadata) {
-      throw new DatabaseError(`Entity ${entityClass.name} not decorated with @Entity.`);
-    }
-
-    this._logger.debug(`Create repository for entity ${green(entityClass.name)}.`);
-    if (ReflectUtil.isType<PostgresqlModuleOptions>(this.options, DatabaseModuleType.Postgresql)) {
-      return PostgresqlRepositoryFactory.create(entityClass);
-    }
-
-    throw new ConfigurationError('Database module type not supported.', this.options);
-  }
-
   /** Initialize Database Module. */
   protected abstract _init(): Promise<void>;
 
@@ -83,6 +68,37 @@ export abstract class DatabaseModuleBase<A extends DatabaseApi> implements IData
    * @returns Database API.
    */
   protected abstract _createApi(): Promise<A>;
+
+  protected _mapRow<T extends object>(entityClass: Class<T>, rows: Record<string, unknown>[]): T[] {
+    const entityMetadata = MetadataFactory.create<EntityMetadata>('entity', entityClass);
+    if (!entityMetadata) {
+      throw new DefinitionError(`Class ${entityClass.name} not decorated with @Entity.`);
+    }
+
+    const properties = entityMetadata.get('properties') ?? [];
+
+    return rows.map((row) => {
+      const entityInstance = new entityClass();
+
+      properties.forEach((property) => {
+        const propertyMetadata = MetadataFactory.create<PropertyMetadata>('property', entityInstance, property);
+        if (!propertyMetadata) {
+          throw new DefinitionError(`Property ${String(property)} not decorated with @Property.`);
+        }
+
+        const column = propertyMetadata.get('column') ?? '';
+        if (!column) {
+          return;
+        }
+
+        entityInstance[property as keyof T] = row[column] as T[keyof T];
+      });
+
+      return entityInstance;
+    });
+
+    return [];
+  }
 
   /** Get Database URL. */
   protected abstract get _databaseUrl(): string;

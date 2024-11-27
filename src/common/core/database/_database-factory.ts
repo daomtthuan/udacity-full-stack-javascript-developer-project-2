@@ -8,7 +8,7 @@ import type { DatabaseApi, InjectionModule, PostgresqlModuleOptions } from '../t
 import { AppContainer } from '../app';
 import { CoreToken, DatabaseModuleType } from '../constants';
 import { ConfigurationError } from '../errors';
-import { PostgresqlModuleFactory } from './postgresql';
+import { PostgresqlModuleFactory } from './modules';
 
 /** Database Factory Static class. */
 class DatabaseFactoryStatic implements IDatabaseFactory {

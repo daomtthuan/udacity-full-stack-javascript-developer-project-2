@@ -2,11 +2,7 @@ import type { Class } from 'type-fest';
 
 import { MetadataFactory } from '~utils/reflect';
 
-import type {
-  ClassDecorator,
-  EntityDecoratorOptions,
-  EntityMetadata,
-} from '../../types';
+import type { ClassDecorator, EntityDecoratorOptions, EntityMetadata } from '../../types';
 
 /**
  * Entity Decorator.

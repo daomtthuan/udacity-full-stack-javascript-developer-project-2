@@ -1,9 +1,10 @@
-import type { QueryArrayResult, QueryResult } from 'pg';
-import type { EmptyObject } from 'type-fest';
+import type { QueryConfig as PostgresqlQueryConfig } from 'pg';
+import type { Class, EmptyObject } from 'type-fest';
 
 import type { ReflectAble } from '~utils/reflect';
 
 import type { DatabaseModuleType } from '../constants';
+import type { IDatabaseModule } from '../interfaces';
 
 /**
  * Database Module options base.
@@ -49,43 +50,57 @@ export type DatabaseModuleOptionsBase<T extends DatabaseModuleType, O extends ob
 /** Postgresql Module options. */
 export type PostgresqlModuleOptions = DatabaseModuleOptionsBase<DatabaseModuleType.Postgresql, EmptyObject>;
 
-/**
- * Database API base.
- *
- * @template A Database API type.
- */
-export type DatabaseApiBase<A extends object> = A & {
-  /** Close database connection. */
-  close: () => Promise<void>;
-};
-
-/** Postgresql Database API. */
-export type PostgresqlDatabaseApi = DatabaseApiBase<{
-  /**
-   * Execute query.
-   *
-   * @template T Result type.
-   * @param template Query template.
-   * @param values Query values.
-   *
-   * @returns Query result.
-   */
-  query: <T extends object>(template: TemplateStringsArray, ...values: unknown[]) => Promise<QueryResult<T>>;
-
-  /**
-   * Execute query array.
-   *
-   * @template T Result type.
-   * @param template Query template.
-   * @param values Query values.
-   *
-   * @returns Query result.
-   */
-  queryArray: <T extends unknown[]>(template: TemplateStringsArray, ...values: unknown[]) => Promise<QueryArrayResult<T>>;
-}>;
-
 /** Database Module options. */
 export type DatabaseModuleOptions = PostgresqlModuleOptions;
 
+/**
+ * Database API base.
+ *
+ * @template C Query config type.
+ * @template R Query result type.
+ */
+export type DatabaseApiBase<C, R> = {
+  /** Close database connection. */
+  close: () => Promise<void>;
+
+  /**
+   * Create query config.
+   *
+   * @param template Query string template.
+   * @param values Query values.
+   *
+   * @returns Query config.
+   */
+  sql: (template: TemplateStringsArray, ...values: unknown[]) => C;
+
+  /**
+   * Execute query.
+   *
+   * @param sql Query config.
+   *
+   * @returns Query result.
+   */
+  query: (sql: C) => R;
+};
+
+/** Postgresql QueryResult. */
+export type PostgresqlQueryResult = {
+  /**
+   * Map entity instances.
+   *
+   * @template T Entity type.
+   * @param entity Entity class.
+   *
+   * @returns Entity instances.
+   */
+  mapEntity: <T extends object>(entity: Class<T>) => Promise<T[]>;
+};
+
+/** Postgresql Database API. */
+export type PostgresqlDatabaseApi = DatabaseApiBase<PostgresqlQueryConfig, PostgresqlQueryResult>;
+
 /** Database API. */
 export type DatabaseApi = PostgresqlDatabaseApi;
+
+/** Postgresql Database Module. */
+export type PostgresqlDatabaseModule = IDatabaseModule<PostgresqlDatabaseApi>;

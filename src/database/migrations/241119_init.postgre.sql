@@ -11,10 +11,10 @@ CREATE TABLE users (
   avatar_url TEXT,
   -- Trackable
   status ENTITY_STATUS NOT NULL DEFAULT 'active',
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   created_by_user_id UUID REFERENCES users(id),
-  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_by_user_id UUID REFERENCES users(id),
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE categories (
@@ -25,10 +25,10 @@ CREATE TABLE categories (
   description TEXT,
   -- Trackable
   status ENTITY_STATUS NOT NULL DEFAULT 'active',
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   created_by_user_id UUID REFERENCES users(id),
-  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_by_user_id UUID REFERENCES users(id),
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE products (
@@ -40,10 +40,10 @@ CREATE TABLE products (
   price NUMERIC(10, 2) NOT NULL,
   -- Trackable
   status ENTITY_STATUS NOT NULL DEFAULT 'active',
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   created_by_user_id UUID REFERENCES users(id),
-  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_by_user_id UUID REFERENCES users(id),
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE product_categories (
@@ -53,10 +53,10 @@ CREATE TABLE product_categories (
   PRIMARY KEY (product_id, category_id),
   -- Trackable
   status ENTITY_STATUS NOT NULL DEFAULT 'active',
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   created_by_user_id UUID REFERENCES users(id),
-  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_by_user_id UUID REFERENCES users(id),
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE reviews (
@@ -72,10 +72,10 @@ CREATE TABLE reviews (
   comment TEXT,
   -- Trackable
   status ENTITY_STATUS NOT NULL DEFAULT 'active',
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   created_by_user_id UUID REFERENCES users(id),
-  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_by_user_id UUID REFERENCES users(id),
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TYPE ORDER_STAGE AS ENUM (
@@ -97,8 +97,8 @@ CREATE TABLE orders (
   stage ORDER_STAGE NOT NULL DEFAULT 'created',
   -- Trackable
   status ENTITY_STATUS NOT NULL DEFAULT 'active',
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   created_by_user_id UUID REFERENCES users(id),
-  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_by_user_id UUID REFERENCES users(id),
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
