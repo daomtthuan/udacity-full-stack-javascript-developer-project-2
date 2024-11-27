@@ -24,8 +24,4 @@ export class User extends Trackable {
   /** Email of the user. */
   @Property('email')
   email!: string;
-
-  /** Avatar url of the user. */
-  @Property('avatar_url')
-  avatarUrl!: string;
 }

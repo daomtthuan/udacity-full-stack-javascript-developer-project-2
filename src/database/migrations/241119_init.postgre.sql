@@ -8,7 +8,6 @@ CREATE TABLE users (
   password TEXT NOT NULL,
   name VARCHAR(100),
   email VARCHAR(100) NOT NULL UNIQUE,
-  avatar_url TEXT,
   -- Trackable
   status ENTITY_STATUS NOT NULL DEFAULT 'active',
   created_by_user_id UUID REFERENCES users(id),
