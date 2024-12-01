@@ -20,7 +20,7 @@
     "paths": {
       "~core": ["src/common/core"],
       "~utils/*": ["src/common/utils/*"],
-      "~constants/*": ["src/constants/*"],
+      "~constants/*": ["src/common/constants/*"],
       "~controllers/*": ["src/controllers/*"],
       "~database/*": ["src/database/*"],
       "~models/*": ["src/models/*"],

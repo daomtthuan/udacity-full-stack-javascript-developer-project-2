@@ -2,11 +2,11 @@ import { AppToken } from '~constants/di';
 import { Module } from '~core';
 import { LogAble } from '~utils/logger';
 
-/** Api module. */
+/** Auth module. */
 @Module({
-  token: AppToken.IApiModule,
+  token: AppToken.IAuthModule,
 
   controllers: [],
   providers: [],
 })
-export class ApiModule extends LogAble {}
+export class AuthModule extends LogAble {}

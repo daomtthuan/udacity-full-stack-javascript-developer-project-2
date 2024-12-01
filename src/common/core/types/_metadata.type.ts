@@ -31,6 +31,9 @@ export type ControllerMetadata = MetadataSchema<
     /** Name of the controller. */
     readonly name: string | symbol;
 
+    /** Base path of the controller. */
+    readonly basePath?: string | undefined;
+
     /** Path of the controller. */
     readonly path: string;
 

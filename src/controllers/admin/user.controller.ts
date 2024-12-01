@@ -2,13 +2,14 @@ import type { IActionResult } from '~core';
 import type { UserService } from '~services/user.service';
 
 import { AppToken } from '~constants/di';
-import { BaseController } from '~controllers/base.controller';
+import { AdminControllerBase } from '~controllers/admin/base.controller';
 import { Controller, Get, Inject } from '~core';
 
+/** User controller. */
 @Controller({
   path: '/users',
 })
-export class UserController extends BaseController {
+export class UserController extends AdminControllerBase {
   constructor(
     @Inject(AppToken.IUserService)
     private readonly _userService: UserService,

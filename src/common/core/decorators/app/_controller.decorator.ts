@@ -3,11 +3,7 @@ import type { Class } from 'type-fest';
 import { StringUtil } from '~utils/data';
 import { MetadataFactory } from '~utils/reflect';
 
-import type {
-  ClassDecorator,
-  ControllerDecoratorOptions,
-  ControllerMetadata,
-} from '../../types';
+import type { ClassDecorator, ControllerDecoratorOptions, ControllerMetadata } from '../../types';
 
 import { Injectable } from '../_di.decorator';
 
@@ -39,16 +35,17 @@ export function Controller(options: ControllerDecoratorOptions | string = {}): C
  * @param constructor Controller class.
  * @param options Controller options.
  */
-function defineMetadata<C extends object>(constructor: Class<C>, { path }: ControllerDecoratorOptions) {
+function defineMetadata<C extends object>(constructor: Class<C>, { basePath, path }: ControllerDecoratorOptions) {
   const controllerMetadata = MetadataFactory.create<ControllerMetadata>(constructor);
 
-  const basePath = controllerMetadata.get('path');
-  const baseActions = controllerMetadata.get('actions') ?? [];
+  const controllerBasePath = controllerMetadata.get('basePath') ?? '';
+  const controllerBaseActions = controllerMetadata.get('actions') ?? [];
 
   controllerMetadata.define({
     $kind: 'controller',
     name: constructor.name,
-    path: StringUtil.resolvePath(basePath, path),
-    actions: baseActions,
+    basePath: StringUtil.resolvePath(controllerBasePath, basePath),
+    path: StringUtil.resolvePath(controllerBasePath, path),
+    actions: controllerBaseActions,
   });
 }

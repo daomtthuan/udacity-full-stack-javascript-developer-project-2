@@ -78,6 +78,7 @@
       "name": "ts-entry"
     }
   ],
+  "jest.runMode": "on-demand",
   "material-icon-theme.folders.associations": {
     "http": "api",
     "utils/data": ""

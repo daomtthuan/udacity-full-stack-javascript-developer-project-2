@@ -49,6 +49,9 @@ export type ModuleDecoratorOptions = {
 
 /** Controller Decorator options. */
 export type ControllerDecoratorOptions = {
+  /** Base path of the controller route. */
+  readonly basePath?: string;
+
   /** Path of the controller route. */
   readonly path?: string;
 };

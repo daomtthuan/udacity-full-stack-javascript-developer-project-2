@@ -131,7 +131,7 @@ class PostgresqlModuleFactoryStatic implements IDatabaseModuleFactory<InjectionT
       private async _createDatabase(database: string) {
         const client = new Client({
           ...this.options.connection,
-          database: 'postgres',
+          database: undefined,
         });
 
         try {
@@ -176,8 +176,7 @@ class PostgresqlModuleFactoryStatic implements IDatabaseModuleFactory<InjectionT
             )
           `;
 
-          const migrationsDir = Path.resolve(process.cwd(), dir);
-          this._logger.debug(`Migreate scripts from ${cyan(migrationsDir)} directory.`);
+          this._logger.debug(`Migrate scripts from ${cyan(dir)} directory.`);
 
           const migrationsResult = await sql`
             SELECT ${MIGRATION_TABLE.COLUMN.NAME}
@@ -191,6 +190,7 @@ class PostgresqlModuleFactoryStatic implements IDatabaseModuleFactory<InjectionT
             return;
           }
 
+          const migrationsDir = Path.resolve(process.cwd(), dir);
           for (const script of needMigrations) {
             const scriptFile = Path.resolve(migrationsDir, script);
 
